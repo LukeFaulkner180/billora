@@ -1,4 +1,4 @@
-import type {Bill,Category,Debt,FinanceData,Frequency,Income,SpendingCategory,SpendingEntry,SavingsGoal} from '../types';
+import type {Bill,Category,Debt,FinanceData,Frequency,Income,SpendingCategory,SpendingEntry,SavingsGoal,CategoryBudgets} from '../types';
 import {spendingCategories,dateLocal} from './spending';
 import {categories, dueOnOrAfter, formatDate, frequencies, makeId, round, today, validDate} from './money';
 
@@ -7,7 +7,7 @@ const OLD_KEY = 'billora_mvp_v1';
 const newBill = (name: string, amount: number, day: number, category: Category): Bill => ({id: makeId(), name, amount, nextDue: dueOnOrAfter(day), anchorDay: day, frequency: 'monthly', category, payments: []});
 const newDebt = (name: string, balance: number, originalBalance: number, apr: number, minPayment: number, promoEnd = ''): Debt => ({id: makeId(), name, balance, originalBalance, apr, minPayment, promoEnd, payments: []});
 export function emptyData(): FinanceData {
-  return {version:2,mode:'personal',incomes:[],bills:[],debts:[],spending:[],savingsGoals:[],settings:{strategy:'avalanche',extraPayment:0,weeklyBudget:0}};
+  return {version:2,mode:'personal',incomes:[],bills:[],debts:[],spending:[],savingsGoals:[],categoryBudgets:{},settings:{strategy:'avalanche',extraPayment:0,weeklyBudget:0}};
 }
 export function demoData(): FinanceData {
   return {
@@ -32,6 +32,7 @@ export function demoData(): FinanceData {
       {id:makeId(),name:'Petrol top-up',amount:35,category:'Transport',date:dateLocal(new Date(Date.now()-2*86400000)),source:'manual'},
     ],
     savingsGoals:[{id:makeId(),name:'Emergency fund',target:2000,saved:625,targetDate:''}],
+    categoryBudgets:{Groceries:80,'Eating out':30,Transport:50,Shopping:40},
     settings: {strategy: 'avalanche', extraPayment: 100, weeklyBudget:125},
   };
 }
@@ -72,8 +73,11 @@ export function normaliseData(payload: unknown): FinanceData {
     const item=object(value);
     return {id:text(item.id)||makeId(),name:text(item.name)||'Savings goal',target:money(item.target),saved:money(item.saved),targetDate:validDate(item.targetDate)?item.targetDate:''};
   }).filter(item=>item.target>0);
+  const categoryBudgets:CategoryBudgets={};
+  const rawCategories=object(data.categoryBudgets);
+  for(const label of spendingCategories){ const limit=money(rawCategories[label]); if(limit>0)categoryBudgets[label]=Math.min(1e8,limit); }
   const settings = object(data.settings);
-  return {version: 2, mode: data.mode === 'demo' ? 'demo' : 'personal', incomes, bills, debts, spending, savingsGoals, settings: {strategy: settings.strategy === 'snowball' ? 'snowball' : 'avalanche', extraPayment: Math.min(1e6, money(settings.extraPayment)),weeklyBudget:Math.min(1e8,money(settings.weeklyBudget))}};
+  return {version: 2, mode: data.mode === 'demo' ? 'demo' : 'personal', incomes, bills, debts, spending, savingsGoals, categoryBudgets, settings: {strategy: settings.strategy === 'snowball' ? 'snowball' : 'avalanche', extraPayment: Math.min(1e6, money(settings.extraPayment)),weeklyBudget:Math.min(1e8,money(settings.weeklyBudget))}};
 }
 export function initialData(): FinanceData {
   try {

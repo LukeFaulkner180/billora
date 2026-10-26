@@ -11,3 +11,4 @@ import './welcome.css';
 createRoot(document.getElementById('root')!).render(<React.StrictMode><App/></React.StrictMode>);
 
 import './budget.css';
+import './premium-gate.css';

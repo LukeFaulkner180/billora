@@ -14,6 +14,8 @@ export async function loadCloudData(userId: string): Promise<FinanceData> {
 export async function saveCloudData(userId: string, data: FinanceData): Promise<void> {
   if(!supabase) throw new Error('Accounts are not configured.');
   if(data.mode==='demo') throw new Error('Sample data cannot be uploaded to an account.');
-  const {error}=await supabase.from('finance_snapshots').upsert({user_id:userId,data,updated_at:new Date().toISOString()},{onConflict:'user_id'});
+  // Premium-only budgets are persisted separately in the RLS-protected premium_budgets table.
+  const sanitized={...data,categoryBudgets:{},settings:{...data.settings,weeklyBudget:0}};
+  const {error}=await supabase.from('finance_snapshots').upsert({user_id:userId,data:sanitized,updated_at:new Date().toISOString()},{onConflict:'user_id'});
   if(error) throw error;
 }

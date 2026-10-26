@@ -1,0 +1,44 @@
+/* Billora Premium feature gates */
+.sidebar-premium-link{width:100%;display:flex;align-items:center;gap:9px;padding:12px;border:1px solid #426c59;background:linear-gradient(120deg,#19382e,#1b2932);border-radius:13px;color:#b5ffd9;font-weight:750;text-align:left;cursor:pointer;margin-bottom:12px}
+.sidebar-premium-link svg:last-child{margin-left:auto}
+.premium-intro{display:flex;align-items:center;justify-content:space-between;gap:12px;background:linear-gradient(120deg,#18332e,#172532);border:1px solid #457460;border-radius:17px;padding:17px 18px}
+.premium-intro strong{color:#e5fff1;font-size:14px}
+.premium-intro p{color:#a5c4bb;font-size:12px;margin:5px 0 0}
+.premium-intro button,.premium-weekly-unlock{border:1px solid #74deb2;background:#8bf2c5;color:#08271b;font-weight:800;border-radius:10px;padding:11px 14px;cursor:pointer;min-height:44px}
+.premium-weekly-unlock{width:100%;margin-top:20px}
+.premium-label{font-size:10px;font-weight:900;letter-spacing:1.25px;color:#8cfdc9}
+.category-budget-panel{grid-column:1/-1}
+.category-budget-header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.category-budget-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:15px}
+.category-budget-item{border:1px solid #2d4b4b;background:#0e2026;border-radius:14px;padding:15px;min-width:0}
+.category-budget-item>div:first-child{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.category-budget-item strong{color:#e7faf1;font-size:13px}
+.category-budget-item small{color:#a6c2bc}
+.category-budget-item .budget-meter{margin-top:11px}
+.category-budget-item .category-budget-alert{color:#ffaea5}
+.category-budget-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}
+.category-budget-form label{display:grid;gap:7px;color:#bfd4ce;font-weight:700;font-size:12px}
+.category-budget-form input{width:100%;min-width:0;border-radius:10px;min-height:45px;padding:10px 12px;background:#0a1921;color:#f0faf5;border:1px solid #355b58}
+.category-budget-form button{grid-column:1/-1;justify-self:start}
+.budget-upgrade-inline{background:#1b342e;border:1px solid #426e5a;padding:12px 15px;border-radius:12px;color:#b7e6ce;margin-top:15px;font-size:13px}
+.budget-upgrade-inline button{margin-left:8px;background:transparent;border:0;color:#adffd7;font-weight:800;text-decoration:underline;cursor:pointer}
+.premium-backdrop{position:fixed;inset:0;background:rgba(2,8,11,.85);z-index:9999;display:grid;place-items:center;padding:16px;overflow:auto;backdrop-filter:blur(9px)}
+.premium-dialog{position:relative;width:min(100%,560px);max-height:calc(100dvh - 32px);overflow:auto;border-radius:24px;background:radial-gradient(circle at 95% 0%,#31785c47,transparent 38%),#121f27;border:1px solid #406459;color:#f0faf5;padding:30px;box-shadow:0 30px 90px #0009}
+.premium-close{position:absolute;top:17px;right:17px;width:38px;height:38px;border-radius:12px;background:#22353b;color:#e9fff4;border:1px solid #426058;display:grid;place-items:center;cursor:pointer}
+.premium-eyebrow{font-size:11px;letter-spacing:2px;font-weight:900;color:#8cfdc9}
+.premium-glow-icon{margin-top:16px;width:56px;height:56px;border-radius:18px;background:#224739;color:#90ffca;display:grid;place-items:center}
+.premium-dialog h2{font-size:clamp(25px,4vw,34px);margin:18px 0 8px;letter-spacing:-1px;line-height:1.1}
+.premium-dialog>p{color:#aac3c2;line-height:1.6;font-size:14px}
+.premium-plan-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:20px 0}
+.premium-plan-grid>div{border:1px solid #334b51;border-radius:15px;padding:17px;background:#192a32;display:grid;gap:10px}
+.premium-plan-grid .premium-plan-highlight{border-color:#6bd3a2;background:#1b3b34}
+.premium-plan-grid small{color:#b1d4c7;font-weight:800;font-size:10px;letter-spacing:1px}
+.premium-plan-grid strong{font-size:21px;color:#ecfff5}
+.premium-plan-grid span{font-size:12px;color:#a9bfc2;line-height:1.5}
+.premium-included{display:grid;gap:10px;margin:10px 0 20px}
+.premium-included span{display:flex;gap:9px;align-items:center;font-size:13px;color:#c6e6d7}
+.premium-included svg{color:#83e9b5}
+.premium-no-charge{background:#23312b;border:1px solid #4d6048;color:#d6dfbf;padding:11px 14px;border-radius:12px;font-size:12px;margin:16px 0}
+.premium-primary{width:100%;justify-content:center}
+@media(max-width:650px){.premium-intro{align-items:flex-start;flex-direction:column}.premium-intro button{width:100%}.category-budget-list,.category-budget-form{grid-template-columns:1fr}.premium-dialog{padding:23px}.premium-plan-grid{grid-template-columns:1fr}.category-budget-header{align-items:flex-start;flex-direction:column}}
+@media(prefers-reduced-motion:reduce){.premium-intro,.category-budget-item{animation:none}}

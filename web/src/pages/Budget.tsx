@@ -1,15 +1,17 @@
 import {useRef,useState,type FormEvent} from 'react';
-import type {FinanceData,SpendingCategory,SpendingEntry,SpendingPeriod,SavingsGoal} from '../types';
+import type {FinanceData,SpendingCategory,SpendingEntry,SpendingPeriod,SavingsGoal,CategoryBudgets} from '../types';
 import {Icon} from '../components/Icons';
 import {PageHeading} from '../components/Ui';
 import {dateLocal,money,parseReceipt,periodBounds,periodSpending,spendingCategories} from '../lib/spending';
-type Props={data:FinanceData;update:(fn:(prev:FinanceData)=>FinanceData)=>void;notify:(message:string)=>void};
+type Props={data:FinanceData;update:(fn:(prev:FinanceData)=>FinanceData)=>void;notify:(message:string)=>void;premium:boolean;onUpgrade:()=>void};
 const safeAmount=(v:string)=>{const n=Number(v);return Number.isFinite(n)?Math.min(1e8,Math.max(0,Math.round(n*100)/100)):0;};
-export function Budget({data,update,notify}:Props){
+export function Budget({data,update,notify,premium,onUpgrade}:Props){
   const [period,setPeriod]=useState<SpendingPeriod>('weekly');
   const [weeklyDraft,setWeeklyDraft]=useState(String(data.settings.weeklyBudget||''));
   const [showExpense,setShowExpense]=useState(false);
   const [showGoal,setShowGoal]=useState(false);
+  const [showBudgetForm,setShowBudgetForm]=useState(false);
+  const [categoryDraft,setCategoryDraft]=useState<Record<string,string>>(()=>Object.fromEntries(spendingCategories.map(c=>[c,String(data.categoryBudgets[c]??'')])));
   const [editing,setEditing]=useState<string|null>(null);
   const [name,setName]=useState('');const [amount,setAmount]=useState('');
   const [category,setCategory]=useState<SpendingCategory>('Groceries');const [date,setDate]=useState(dateLocal());
@@ -22,6 +24,7 @@ export function Budget({data,update,notify}:Props){
   const [rangeStart,rangeEnd]=periodBounds(period);
   const spent=periodSpending(data.spending,period),weekSpent=periodSpending(data.spending,'weekly');
   const remaining=data.settings.weeklyBudget-weekSpent;
+  const [weekStart,weekEnd]=periodBounds('weekly');
   const used=data.settings.weeklyBudget>0?Math.min(100,Math.round(weekSpent/data.settings.weeklyBudget*100)):0;
   const totalSaved=data.savingsGoals.reduce((s,g)=>s+g.saved,0);
   const breakdown=spendingCategories.map(label=>({label,value:data.spending.filter(x=>x.category===label&&x.date>=rangeStart&&x.date<rangeEnd).reduce((s,x)=>s+x.amount,0)})).filter(x=>x.value>0).sort((a,b)=>b.value-a.value);
@@ -44,6 +47,7 @@ export function Budget({data,update,notify}:Props){
     setContribution(x=>({...x,[goal.id]:''}));notify('Goal updated. No money has been moved.');
   }
   async function scan(file?:File){if(!file)return;
+    if(!premium){onUpgrade();return;}
     if(!file.type.startsWith('image/')||file.size>12_000_000){setScanMessage('Choose a receipt photo under 12MB.');return;}
     setScanning(true);setScanMessage('Reading on your phone or computer. The first scan downloads OCR data.');
     try{const {createWorker}=await import('tesseract.js');const worker=await createWorker('eng');let text='';
@@ -56,8 +60,9 @@ export function Budget({data,update,notify}:Props){
   }
   return <div className="budget-page">
     <PageHeading eyebrow="Everyday money" title="Budget & spending" description="See where your money goes, set flexible spending limits and make progress on your goals."/>
+    <div className="premium-intro"><div><strong>{premium?'Premium budgeting enabled':'Meet Billora Premium'}</strong><p>{premium?'Plan each category and scan receipts into your personal spending.':'Upgrade to unlock weekly limits, category budgets and receipt photo scanning.'}</p></div>{!premium&&<button type="button" onClick={onUpgrade}>Explore Premium</button>}</div>
     <div className="budget-tools"><button type="button" className="btn btn-primary" onClick={()=>{reset();setShowExpense(true);}}><Icon name="plus"/> Add spending</button>
-      <button type="button" className="btn btn-secondary" disabled={scanning} onClick={()=>fileRef.current?.click()}><Icon name="receipt"/>{scanning?'Scanning…':'Scan receipt'}</button>
+      <button type="button" className="btn btn-secondary" disabled={scanning} onClick={()=>premium?fileRef.current?.click():onUpgrade()}><Icon name="receipt"/>{scanning?'Scanning…':'Scan receipt'}</button>
       <input ref={fileRef} type="file" accept="image/*" capture="environment" aria-label="Take or upload a receipt photo" hidden onChange={e=>void scan(e.target.files?.[0])}/></div>
     {scanMessage&&!showExpense&&<p role="status" className="budget-message">{scanMessage}</p>}
     <div className="budget-summary">
@@ -65,14 +70,36 @@ export function Budget({data,update,notify}:Props){
         <p>For everyday purchases — separate from your bills and loan repayments.</p>
         <div className="budget-meter"><span style={{width:used+'%',background:remaining<0?'#fba8ac':'#7ce8bc'}}/></div>
         <div className="budget-progress"><span>{money(weekSpent)} spent</span><strong>{remaining>=0?money(remaining)+' left':money(-remaining)+' over budget'}</strong></div>
-        <form className="budget-limit" onSubmit={e=>{e.preventDefault();update(prev=>({...prev,settings:{...prev.settings,weeklyBudget:safeAmount(weeklyDraft)}}));notify('Weekly spending budget saved.');}}>
+        {premium?<form className="budget-limit" onSubmit={e=>{e.preventDefault();update(prev=>({...prev,settings:{...prev.settings,weeklyBudget:safeAmount(weeklyDraft)}}));notify('Weekly budget saved.');}}>
           <label htmlFor="budget-limit">Set your weekly limit (£)</label><div><input type="number" id="budget-limit" inputMode="decimal" min="0" step="0.01" placeholder="e.g. 125" value={weeklyDraft} onChange={e=>setWeeklyDraft(e.target.value)}/><button type="submit">Save</button></div>
-        </form></section>
+        </form>:<button className="premium-weekly-unlock" type="button" onClick={onUpgrade}>Unlock weekly budgets ✦</button>}</section>
       <section className="budget-total-card"><span className="budget-kicker">YOUR SPENDING</span><div className="budget-tabs" role="group" aria-label="Spending period">
         {(['daily','weekly','monthly','yearly'] as SpendingPeriod[]).map(p=><button type="button" key={p} className={period===p?'selected':''} aria-pressed={period===p} onClick={()=>setPeriod(p)}>{p==='daily'?'Day':p==='weekly'?'Week':p==='monthly'?'Month':'Year'}</button>)}</div>
         <strong className="budget-number">{money(spent)}</strong><p>{data.spending.filter(x=>x.date>=rangeStart&&x.date<rangeEnd).length} recorded purchases in this period</p>
         <div className="budget-overview-mini"><div><small>Today</small><strong>{money(periodSpending(data.spending,'daily'))}</strong></div><div><small>This month</small><strong>{money(periodSpending(data.spending,'monthly'))}</strong></div><div><small>This year</small><strong>{money(periodSpending(data.spending,'yearly'))}</strong></div></div>
       </section></div>
+    <section className="card panel category-budget-panel" aria-label="Category spending budgets">
+      <div className="category-budget-header"><div><span className="premium-label">✦ PREMIUM CATEGORY BUDGETS</span><h2>Give every category a limit</h2><p style={{color:'#9eb8b3',fontSize:13,marginTop:5}}>Each budget resets on Monday. Regular bills and debt repayments stay separate.</p></div>
+        {!premium&&<button className="btn btn-secondary" type="button" onClick={onUpgrade}>Unlock category budgets</button>}
+      </div>
+      <div className="category-budget-list">
+        {spendingCategories.map(label=>{
+          const limit=premium?(data.categoryBudgets[label]||0):({Groceries:80,'Eating out':30,Transport:50,Shopping:40,Entertainment:25,Health:20,Other:15} as Record<SpendingCategory,number>)[label];
+          const actual=data.spending.filter(item=>item.category===label&&item.date>=weekStart&&item.date<weekEnd).reduce((sum,item)=>sum+item.amount,0);
+          const percent=limit?Math.round(actual/limit*100):0;
+          return <div className="category-budget-item" key={label}>
+            <div><strong>{label}</strong><small>{premium?(limit?money(actual)+' / '+money(limit):'No limit set'):'Example '+money(limit)}</small></div>
+            <div className="budget-meter"><span style={{width:Math.min(100,percent)+'%',background:percent>=100?'#faa4a2':percent>=80?'#f3c779':'#7ce8bc'}}/></div>
+            <small className={percent>=100?'category-budget-alert':''}>{premium?(limit?percent>=100?money(actual-limit)+' over limit':money(limit-actual)+' remaining':'Set a category limit below'):'See your actual spending against this target with Premium'}</small>
+          </div>;
+        })}
+      </div>
+      {premium?<><button type="button" className="btn btn-secondary" style={{marginTop:16}} onClick={()=>setShowBudgetForm(!showBudgetForm)}>{showBudgetForm?'Hide category settings':'Edit category budgets'}</button>
+        {showBudgetForm&&<form className="category-budget-form" onSubmit={e=>{e.preventDefault();const limits:CategoryBudgets={};for(const cat of spendingCategories){const amount=safeAmount(categoryDraft[cat]||'');if(amount>0)limits[cat]=amount;}update(prev=>({...prev,categoryBudgets:limits}));setShowBudgetForm(false);notify('Category budgets saved.');}}>
+          {spendingCategories.map(cat=><label key={cat}>{cat} (weekly £)<input type="number" inputMode="decimal" min="0" max="100000000" step="0.01" placeholder="No limit" value={categoryDraft[cat]||''} onChange={e=>setCategoryDraft(prev=>({...prev,[cat]:e.target.value}))}/></label>)}
+          <button className="btn btn-primary" type="submit">Save category limits</button>
+        </form>}</>:<div className="budget-upgrade-inline">Category limits are a Premium feature. <button type="button" onClick={onUpgrade}>See what is included</button></div>}
+    </section>
     <div className="budget-panels">
       <section className="card panel"><div className="panel-heading"><div><h2>Spending by category</h2><p>Understand where purchases add up</p></div><Icon name="chart"/></div>
         {breakdown.length?<div className="budget-category-list">{breakdown.map(row=><div key={row.label} className="budget-category"><div><strong>{row.label}</strong><span>{money(row.value)}</span></div><div className="budget-meter"><span style={{width:Math.round(row.value/spent*100)+'%'}}/></div></div>)}</div>:<p className="budget-empty">No spending in this period yet.</p>}</section>

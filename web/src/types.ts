@@ -6,6 +6,7 @@ export type Page = 'overview' | 'budget' | 'bills' | 'debts' | 'planner' | 'sett
 export type SpendingCategory = 'Groceries' | 'Eating out' | 'Transport' | 'Shopping' | 'Entertainment' | 'Health' | 'Other';
 export type SpendingPeriod = 'daily' | 'weekly' | 'monthly' | 'yearly';
 export interface SpendingEntry {id:string;name:string;amount:number;date:string;category:SpendingCategory;source:'manual'|'receipt'}
+export type CategoryBudgets = Partial<Record<SpendingCategory, number>>;
 export interface SavingsGoal {id:string;name:string;target:number;saved:number;targetDate:string}
 
 export interface BillPayment { date: string; amount: number; due: string }
@@ -39,5 +40,6 @@ export interface FinanceData {
   debts: Debt[];
   spending: SpendingEntry[];
   savingsGoals: SavingsGoal[];
+  categoryBudgets: CategoryBudgets;
   settings: { strategy: Strategy; extraPayment: number; weeklyBudget: number };
 }

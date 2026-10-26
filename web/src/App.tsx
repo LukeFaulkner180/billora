@@ -17,6 +17,8 @@ import {Budget} from './pages/Budget';
 import {AccountDialog} from './auth/AccountDialog';
 import {accountsConfigured,supabase} from './auth/client';
 import {loadCloudData,saveCloudData} from './auth/cloud';
+import {hasPremiumEntitlement,loadPremiumBudgets,savePremiumBudgets} from './auth/premium';
+import {PremiumDialog} from './components/PremiumDialog';
 
 const pages: Record<Page,{name:string,short:string,icon:string}> = {
   overview:{name:'Overview',short:'Home',icon:'overview'},budget:{name:'Budget & spending',short:'Budget',icon:'wallet'},bills:{name:'My bills',short:'Bills',icon:'calendar'},debts:{name:'My debts',short:'Debts',icon:'card'},planner:{name:'Debt-free planner',short:'Planner',icon:'trend'},settings:{name:'Settings & income',short:'Settings',icon:'settings'},
@@ -43,6 +45,8 @@ export default function App() {
   const [cloudError,setCloudError]=useState('');
   const [syncStatus,setSyncStatus]=useState<'idle'|'saving'|'saved'|'error'>('idle');
   const [authLoading,setAuthLoading]=useState(accountsConfigured);
+  const [premiumAccess,setPremiumAccess]=useState(false);
+  const [showPremium,setShowPremium]=useState(false);
   const userId=user?.id;
   const notify=(message:string)=>setToast(message);
 
@@ -76,17 +80,21 @@ export default function App() {
     setCloudReady(false);
     setCloudError('');
     setSyncStatus('idle');
+    setPremiumAccess(false);
     if(!userId){setData(initialData());setDataOwner('local');return;}
-    // A fresh account starts empty, not with the example data from the demo.
     setData(emptyData());setDataOwner('loading');
-    void loadCloudData(userId).then(result=>{
-      if(cancelled)return;
-      setData(result);setDataOwner(userId);setCloudReady(true);setSyncStatus('saved');
-    }).catch(error=>{
-      if(cancelled)return;
-      setCloudError(error instanceof Error?error.message:'Could not load your finance data.');
-      setSyncStatus('error');
-    });
+    void Promise.all([loadCloudData(userId),hasPremiumEntitlement(userId)])
+      .then(async ([result,allowed])=>{
+        const premiumBudgets=allowed?await loadPremiumBudgets(userId):{weeklyBudget:0,categoryBudgets:{}};
+        if(cancelled)return;
+        setPremiumAccess(allowed);
+        setData({...result,categoryBudgets:premiumBudgets.categoryBudgets,settings:{...result.settings,weeklyBudget:premiumBudgets.weeklyBudget}});
+        setDataOwner(userId);setCloudReady(true);setSyncStatus('saved');
+      }).catch(error=>{
+        if(cancelled)return;
+        setCloudError(error instanceof Error?error.message:'Could not load your finance data.');
+        setSyncStatus('error');
+      });
     return ()=>{cancelled=true;};
   },[userId]);
   useEffect(()=>{
@@ -95,7 +103,9 @@ export default function App() {
       setSyncStatus('saving');
       let cancelled=false;
       const timeout=window.setTimeout(()=>{
-        void saveCloudData(userId,data).then(()=>{
+        const actions:Promise<void>[]=[saveCloudData(userId,data)];
+        if(premiumAccess)actions.push(savePremiumBudgets(userId,{weeklyBudget:data.settings.weeklyBudget,categoryBudgets:data.categoryBudgets}));
+        void Promise.all(actions).then(()=>{
           if(!cancelled)setSyncStatus('saved');
         }).catch(error=>{
           if(cancelled)return;
@@ -106,7 +116,7 @@ export default function App() {
       return ()=>{cancelled=true;window.clearTimeout(timeout);};
     }
     if(!authLoading && dataOwner==='local' && !saveData(data))notify('Unable to save locally. Export a backup.');
-  },[data,userId,cloudReady,cloudError,authLoading,dataOwner]);
+  },[data,userId,cloudReady,cloudError,authLoading,dataOwner,premiumAccess]);
 
   const update=(fn:(prev:FinanceData)=>FinanceData)=>{
     if(userId&&!cloudReady){notify('Account data is still loading.');return;}
@@ -181,6 +191,7 @@ export default function App() {
   if(!user && !showDemo) return <>
     <Welcome onDemo={openDemo} onSignIn={()=>openAccount('login')} onSignUp={()=>openAccount('signup')} onAccountInfo={()=>setShowReleaseInfo(true)}/>
     {accountModal}
+    {showPremium&&<PremiumDialog onClose={()=>setShowPremium(false)} signedIn={Boolean(user)} onAccount={()=>openAccount('signup')}/>}
     {showReleaseInfo&&<div className="auth-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)setShowReleaseInfo(false);}}><section className="welcome-release-dialog" role="dialog" aria-modal="true" aria-labelledby="release-note-heading"><button className="auth-close" onClick={()=>setShowReleaseInfo(false)} aria-label="Close"><Icon name="close"/></button><h2 id="release-note-heading">Your privacy matters.</h2><p>This is an early public preview, not a fully launched financial service. The demo uses fictional examples and browser-only storage. Do not enter real private financial information here.</p><p>Real sign-in, personal cloud storage, privacy terms and account deletion are being prepared. We'll clearly announce when secure accounts are live.</p><button className="welcome-demo-btn" onClick={()=>{setShowReleaseInfo(false);openDemo();}}>Explore the demo</button></section></div>}
     {toast&&<div className="toast is-visible" role="status">{toast}</div>}
   </>;
@@ -192,6 +203,7 @@ export default function App() {
       <nav className="nav-list">{(['overview','budget','bills','debts','planner'] as Page[]).map(id=>navButton(id))}</nav>
       <div className="nav-intro lower">ACCOUNT</div><nav className="nav-list">{navButton('settings')}</nav>
       <div className="sidebar-bottom">
+        {!premiumAccess&&<button className="sidebar-premium-link" type="button" onClick={()=>setShowPremium(true)}><Icon name="sparkle"/> Discover Billora Premium <Icon name="arrow"/></button>}
         <div className="help-card"><span className="help-sparkle">✦</span><strong>Make money feel lighter.</strong><p>Little steps today. More freedom tomorrow.</p><div className="help-progress"><span/></div></div>
         <button className="sidebar-account" type="button" onClick={()=>openAccount()}><span className="sidebar-avatar">{user?.email?.[0]?.toUpperCase()||'B'}</span><span><strong>{user?'My Billora account':'Create an account'}</strong><small>{user?.email||'Keep track of your progress'}</small></span><Icon name="arrow"/></button>
       </div>
@@ -200,7 +212,7 @@ export default function App() {
       <div className="content" aria-live="polite">
         {userId && (!cloudReady||cloudError)?<div className="cloud-state"><div className="cloud-state-icon"><Icon name="shield"/></div><h2>{cloudError?'Unable to load your finances':'Opening your secure account…'}</h2><p>{cloudError?`Your financial data has not been overwritten. ${cloudError}`:'Checking your securely saved bills and repayments.'}</p>{cloudError&&<button className="btn btn-secondary" onClick={()=>void loadCloudData(userId).then(result=>{setData(result);setDataOwner(userId);setCloudReady(true);setCloudError('');}).catch(error=>setCloudError(error instanceof Error?error.message:'Try again later.'))}>Try again</button>}</div>:<>
           {page==='overview'&&<Overview data={data} add={kind=>add(kind)} navigate={navigate} openSignup={()=>openAccount('signup')} signedIn={Boolean(user)}/>} 
-          {page==='budget'&&<Budget data={data} update={update} notify={notify}/>}
+          {page==='budget'&&<Budget data={data} update={update} notify={notify} premium={premiumAccess} onUpgrade={()=>setShowPremium(true)}/>}
           {page==='bills'&&<Bills data={data} add={()=>add('bill')} edit={id=>edit('bill',id)} remove={id=>remove('bill',id)} pay={markBillPaid}/>}
           {page==='debts'&&<Debts data={data} add={()=>add('debt')} edit={id=>edit('debt',id)} remove={id=>remove('debt',id)} pay={id=>{const debt=data.debts.find(d=>d.id===id);if(debt)setMode({kind:'payment',item:debt});}}/>}
           {page==='planner'&&<Planner data={data} onChange={settings=>update(prev=>({...prev,settings}))}/>}
@@ -211,6 +223,7 @@ export default function App() {
     <nav className="mobile-nav" aria-label="Mobile menu">{(Object.keys(pages) as Page[]).map(id=>navButton(id,true))}</nav>
     {mode&&<FinanceForm key={`${mode.kind}-${mode.item?.id||'new'}`} mode={mode} close={()=>setMode(null)} save={submit}/>}
     {accountModal}
+    {showPremium&&<PremiumDialog onClose={()=>setShowPremium(false)} signedIn={Boolean(user)} onAccount={()=>openAccount('signup')}/>}
     {toast&&<div className="toast is-visible" role="status">{toast}</div>}
   </div>;
 }
