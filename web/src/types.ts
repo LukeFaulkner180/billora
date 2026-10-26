@@ -2,7 +2,7 @@
 export type Frequency = 'weekly' | 'fourweekly' | 'monthly' | 'quarterly' | 'yearly';
 export type Category = 'Home' | 'Utilities' | 'Subscriptions' | 'Insurance' | 'Transport' | 'Other';
 export type Strategy = 'snowball' | 'avalanche';
-export type Page = 'overview' | 'budget' | 'bills' | 'debts' | 'planner' | 'settings';
+export type Page = 'overview' | 'budget' | 'bills' | 'debts' | 'planner' | 'settings' | 'together';
 export type SpendingCategory = 'Groceries' | 'Eating out' | 'Transport' | 'Shopping' | 'Entertainment' | 'Health' | 'Other';
 export type SpendingPeriod = 'daily' | 'weekly' | 'monthly' | 'yearly';
 export interface SpendingEntry {id:string;name:string;amount:number;date:string;category:SpendingCategory;source:'manual'|'receipt'}

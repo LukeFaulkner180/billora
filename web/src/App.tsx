@@ -15,6 +15,7 @@ import {Debts} from './pages/Debts';
 import {Planner} from './pages/Planner';
 import {Settings} from './pages/Settings';
 import {Budget} from './pages/Budget';
+import {Together} from './pages/Together';
 import {AccountDialog} from './auth/AccountDialog';
 import {PasswordResetDialog} from './auth/PasswordResetDialog';
 import {accountsConfigured,supabase} from './auth/client';
@@ -23,7 +24,7 @@ import {hasPremiumEntitlement,loadPremiumBudgets,savePremiumBudgets} from './aut
 import {PremiumDialog} from './components/PremiumDialog';
 
 const pages: Record<Page,{name:string,short:string,icon:string}> = {
-  overview:{name:'Overview',short:'Home',icon:'overview'},budget:{name:'Budget & spending',short:'Budget',icon:'wallet'},bills:{name:'My bills',short:'Bills',icon:'calendar'},debts:{name:'My debts',short:'Debts',icon:'card'},planner:{name:'Debt-free planner',short:'Planner',icon:'trend'},settings:{name:'Settings & income',short:'Settings',icon:'settings'},
+  overview:{name:'Overview',short:'Home',icon:'overview'},budget:{name:'Budget & spending',short:'Budget',icon:'wallet'},bills:{name:'My bills',short:'Bills',icon:'calendar'},debts:{name:'My debts',short:'Debts',icon:'card'},planner:{name:'Debt-free planner',short:'Planner',icon:'trend'},settings:{name:'Settings & income',short:'Settings',icon:'settings'},together:{name:'Billora Together',short:'Together',icon:'home'},
 };
 const pageFromHash = ():Page => window.location.hash.slice(1) in pages ? window.location.hash.slice(1) as Page : 'overview';
 // Direct links: /billora/?auth=login and /billora/?auth=signup.
@@ -223,7 +224,7 @@ export default function App() {
       <div className="sidebar-caption">A better relationship with money.</div><button type="button" className="site-link" onClick={goHome}><Icon name="arrow"/> View welcome page</button>
       <div className="nav-intro">YOUR WORKSPACE</div>
       <nav className="nav-list">{(['overview','budget','bills','debts','planner'] as Page[]).map(id=>navButton(id))}</nav>
-      <div className="nav-intro lower">ACCOUNT</div><nav className="nav-list">{navButton('settings')}</nav>
+      <div className="nav-intro lower">ACCOUNT</div><nav className="nav-list">{navButton('settings')}{navButton('together')}</nav>
       <div className="sidebar-bottom">
         {!premiumAccess&&<button className="sidebar-premium-link" type="button" onClick={()=>setShowPremium(true)}><Icon name="sparkle"/> Discover Billora Premium <Icon name="arrow"/></button>}
         <div className="help-card"><span className="help-sparkle">✦</span><strong>Make money feel lighter.</strong><p>Little steps today. More freedom tomorrow.</p><div className="help-progress"><span/></div></div>
@@ -238,6 +239,7 @@ export default function App() {
           {page==='bills'&&<Bills data={data} add={()=>add('bill')} edit={id=>edit('bill',id)} remove={id=>remove('bill',id)} pay={markBillPaid}/>}
           {page==='debts'&&<Debts data={data} add={()=>add('debt')} edit={id=>edit('debt',id)} remove={id=>remove('debt',id)} pay={id=>{const debt=data.debts.find(d=>d.id===id);if(debt)setMode({kind:'payment',item:debt});}}/>}
           {page==='planner'&&<Planner data={data} onChange={settings=>update(prev=>({...prev,settings}))}/>}
+          {page==='together'&&userId&&<Together userId={userId} premium={premiumAccess} notify={notify} requestConfirm={requestConfirm}/>}
           {page==='settings'&&<Settings data={data} add={()=>add('income')} edit={id=>edit('income',id)} remove={id=>remove('income',id)} replace={value=>setData({...value,mode:'personal'})} cloud={Boolean(userId)} notify={notify} requestConfirm={requestConfirm}/>}
         </>}
       </div>
@@ -247,11 +249,12 @@ export default function App() {
         <div className="billora-more-head"><strong>More from Billora</strong><button type="button" aria-label="Close menu" onClick={()=>setMoreOpen(false)}><Icon name="close"/></button></div>
         <button type="button" onClick={()=>navigate('planner')}><Icon name="trend"/> Debt-free planner <Icon name="arrow"/></button>
         <button type="button" onClick={()=>navigate('settings')}><Icon name="settings"/> Settings & income <Icon name="arrow"/></button>
+        <button type="button" onClick={()=>navigate('together')}><Icon name="home"/> Billora Together <Icon name="arrow"/></button>
         {!user&&<button type="button" onClick={()=>{setMoreOpen(false);goHome();}}><Icon name="home"/> Billora website <Icon name="arrow"/></button>}
       </section></>}
     <nav className="mobile-nav billora-bottom-nav" aria-label="Mobile menu">
       {(['overview','budget','bills','debts'] as Page[]).map(id=>navButton(id,true))}
-      <button type="button" className={moreOpen||page==='settings'||page==='planner'?'is-active':''} aria-expanded={moreOpen} aria-controls="billora-more-menu" onClick={()=>setMoreOpen(open=>!open)}><Icon name="menu"/><small>More</small></button>
+      <button type="button" className={moreOpen||page==='settings'||page==='planner'||page==='together'?'is-active':''} aria-expanded={moreOpen} aria-controls="billora-more-menu" onClick={()=>setMoreOpen(open=>!open)}><Icon name="menu"/><small>More</small></button>
     </nav>
     {confirmation&&<ConfirmDialog confirmation={confirmation} onCancel={()=>setConfirmation(null)} onAccept={acceptConfirm}/>}
     {mode&&<FinanceForm key={`${mode.kind}-${mode.item?.id||'new'}`} mode={mode} close={()=>setMode(null)} save={submit}/>}
