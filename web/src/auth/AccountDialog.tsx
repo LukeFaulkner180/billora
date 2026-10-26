@@ -1,6 +1,7 @@
 import {useEffect, useState, type FormEvent} from 'react';
 import {supabase, accountsConfigured} from './client';
 import {Icon} from '../components/Icons';
+import {Brand} from '../components/Brand';
 
 type AuthView = 'login'|'signup'|'recover';
 
@@ -56,7 +57,7 @@ export function AccountDialog({onClose, notice, initialView='login'}: {onClose:(
   return <div className="auth-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)onClose();}}>
     <section className="auth-dialog" role="dialog" aria-modal="true" aria-labelledby="account-title">
       <div className="auth-showcase">
-        <span className="auth-logo"><span className="auth-logo-mark">✦</span> billora<span className="brand-dot">.</span></span>
+        <span className="auth-logo"><Brand/></span>
         <div className="auth-illustration"><div className="auth-glow"/><span className="floating-chip first-chip">↗ &nbsp; One clear picture</span><div className="auth-illustration-card"><small>YOUR FINANCIAL FUTURE</small><strong>Money feels better<br/>when it makes sense.</strong><div className="auth-bars"><i/><i/><i/><i/><i/><i/><i/><i/><i/></div></div><span className="floating-chip last-chip">✳ &nbsp; Your pace. Your plan.</span></div>
         <div><h2>Make space for<br/>what matters.</h2><p>All your bills, debts and goals together. Less uncertainty, more forward motion.</p></div>
       </div>

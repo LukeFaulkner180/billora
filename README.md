@@ -1,6 +1,15 @@
 # Billora
 
-Consumer-first personal finance app. **Version 0.3**: React + TypeScript + Vite, modern UI, animated summaries, responsive layouts, and an authentication UI prepared for email/password, Google and Microsoft.
+Consumer-first personal finance app. **Version 0.5 public preview**: React + TypeScript + Vite, modern UI, animated summaries, responsive layouts, and an authentication UI prepared for email/password, Google and Microsoft.
+
+## Visitor experience and current status
+
+- **New visitors** see the branded marketing/welcome screen with the real approved Billora symbol, Sign in / Create account entry points and a Try Demo button.
+- **Demo route:** `https://lukefaulkner180.github.io/billora/?demo=1` opens the existing example-money workspace.
+- **Account routes:** `?auth=login` and `?auth=signup` show the branded account interface, but cannot create accounts until the dedicated Billora Supabase project and OAuth providers are configured.
+- The original full-colour source logo is bundled for design reference as `web/public/billora-original-logo.svg`; `web/public/billora-symbol.svg` contains the approved icon optimised for dark backgrounds.
+
+See [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md) for the production launch blockers. This version is a public **preview**, not a consumer-finance production release.
 
 ## What is live in the demo?
 
@@ -71,3 +80,10 @@ Review authentication redirects, password recovery, API rate limiting, privacy n
 
 On mobile, use the **Sign up** or **Sign in** buttons at the top of the dashboard. Account screens currently show a setup notice until a dedicated Billora Supabase project and the Google/Microsoft OAuth providers are configured. Do not enter real financial information yet.
 
+
+## Brand assets
+
+- `web/public/billora-symbol.svg`: approved icon asset for web UI and favicon
+- `web/public/billora-original-logo.svg`: original, approved full lockup (best against a light background)
+- `web/src/components/Brand.tsx`: accessible, high-contrast wordmark + approved icon for dark UI
+- `web/src/pages/Welcome.tsx` and `web/src/welcome.css`: first-time visitor website and launch-preview information
