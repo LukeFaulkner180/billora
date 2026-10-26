@@ -171,7 +171,7 @@ export function Welcome({onDemo,onSignIn,onSignUp,onAccountInfo}:Props) {
             </div>
             <div className="fin-together-preview" aria-label="Fictional illustration of separate personal and shared household financial spaces">
               <div className="fin-together-preview-header"><div className="fin-together-avatars"><span>A</span><span>B</span></div><span>EXAMPLE WORKSPACES</span><Icon name="shield" size={17}/></div>
-              <div className="fin-together-toggle"><span><Icon name="user" size={15}/> My finances <small>Private</small></span><span className="is-selected"><Icon name="home" size={15}/> Our household <small>Shared</small></span></div>
+              <div className="fin-together-toggle"><span><Icon name="shield" size={15}/> My finances <small>Private</small></span><span className="is-selected"><Icon name="home" size={15}/> Our household <small>Shared</small></span></div>
               <div className="fin-together-preview-main">
                 <div><small>Household bills</small><strong>£1,320.00</strong><span>Example monthly total</span></div>
                 <div><small>Joint savings</small><strong>£650.00</strong><span>Of £2,000 goal</span><div className="fin-together-track"><i/></div></div>
