@@ -12,3 +12,4 @@ createRoot(document.getElementById('root')!).render(<React.StrictMode><App/></Re
 
 import './budget.css';
 import './premium-gate.css';
+import './finance-landing.css';
