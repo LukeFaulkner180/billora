@@ -5,6 +5,9 @@ const KEY = 'billora_mvp_v2';
 const OLD_KEY = 'billora_mvp_v1';
 const newBill = (name: string, amount: number, day: number, category: Category): Bill => ({id: makeId(), name, amount, nextDue: dueOnOrAfter(day), anchorDay: day, frequency: 'monthly', category, payments: []});
 const newDebt = (name: string, balance: number, originalBalance: number, apr: number, minPayment: number, promoEnd = ''): Debt => ({id: makeId(), name, balance, originalBalance, apr, minPayment, promoEnd, payments: []});
+export function emptyData(): FinanceData {
+  return {version:2,mode:'personal',incomes:[],bills:[],debts:[],settings:{strategy:'avalanche',extraPayment:0}};
+}
 export function demoData(): FinanceData {
   return {
     version: 2, mode: 'demo',

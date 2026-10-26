@@ -1,78 +1,65 @@
 # Billora
 
-**Billora** is a consumer-focused bill tracker and debt-free planning web app. This is Version 0.2, now structured with React, TypeScript and Vite.
+Consumer-first personal finance app. **Version 0.3**: React + TypeScript + Vite, modern UI, animated summaries, responsive layouts, and an authentication UI prepared for email/password, Google and Microsoft.
 
-> **Demo only.** No accounts, bank connections or secure cloud database yet. Information stays in browser storage on your device, is not synced, and may be lost when you clear browsing data. Do not enter bank account numbers or other sensitive details. Examples are fictional. Calculations are illustrations, not financial advice.
+## What is live in the demo?
 
-## Run it locally
+- Modern overview with animated monthly figures, category chart, upcoming bills and payoff progress
+- Bills, debts, incomes, payment history and repayment simulations
+- Mobile navigation, forms and import/export
+- Account UI with Google/Microsoft and email signup, **not yet active until a NEW Billora Supabase project is provisioned**
 
-You need Node.js 22.12+ and npm.
+**Do not enter genuine sensitive information into the unauthenticated local demo.** In demo mode data lives in browser localStorage and is not synchronised. Google/Microsoft logins are *not* simulated — the buttons provide an honest setup message until configured.
+
+## Local setup
 
 ```bash
-cd web
+cd web   # source lives in the web/ directory in the GitHub repository
 npm install
 npm run dev
+npm run build
 ```
 
-Open the local Vite URL. Validate the production site with `npm run build` and `npm run preview`.
+The repository contains a GitHub Pages Action that builds `web/` and deploys the compiled `web/dist` folder.
 
-## File structure
+## Turn on real accounts (requires owner configuration)
+
+1. Create a **new separate Supabase project named Billora**. NEVER reuse the DayRidge/ClockLio project.
+2. In that new project's SQL editor, review and run `supabase/001_finance_snapshots.sql` from this repository. Its RLS policies limit every row by `auth.uid()`.
+3. Configure **Authentication → URL Configuration**: Site URL and Redirect URLs must include `https://lukefaulkner180.github.io/billora/`. For local testing allow `http://localhost:5173/billora/` too.
+4. **Google:** create a Google Cloud OAuth web client; use `https://<BILLORA_PROJECT_REF>.supabase.co/auth/v1/callback` as authorised redirect URI, and place the Google client ID and secret in **Supabase → Authentication → Providers → Google**. Only the email/profile/openid scopes are needed.
+5. **Microsoft:** register a Microsoft Entra application. For consumer use choose an account type including personal Microsoft accounts. Add the same Supabase callback as a Web Redirect URI. Place its client ID and **client secret value** (not secret ID) into **Supabase → Authentication → Providers → Azure**. Request email scope in the app (already implemented). Configure the `xms_edov` optional claim as recommended by Supabase for verified-email handling.
+6. **Email/password:** enable email signups, decide whether confirmation is mandatory and configure a production email service if necessary.
+7. In the *Billora* GitHub repository **Settings → Secrets and variables → Actions → Variables**, set `VITE_SUPABASE_URL` to the new project's API URL and `VITE_SUPABASE_PUBLISHABLE_KEY` to its **publishable** public key. Do not put service-role keys or OAuth client secrets in the repository or GitHub Pages build.
+8. Trigger **Actions → Build and deploy Billora → Run workflow** to rebuild with those two values.
+9. Test email signup/confirmation, Google and Microsoft callback, two separate accounts (verify no cross-account access), sign-out, import/export and error conditions before inviting real users.
+
+**The initial GitHub Pages deployment intentionally runs without Supabase credentials. Account buttons cannot really authenticate until steps 1–8 are complete.** Secure cloud data is not wired to DayRidge.
+
+## Project structure
 
 ```text
-billora/
-├── index.html                # Original v0.1 fallback until Pages source changes
-├── web/                      # React + TypeScript + Vite source
-│   ├── package.json              # Libraries & commands
-│   ├── vite.config.ts            # Build and GitHub Pages URL base
-│   ├── src/
-│   ├── main.tsx              # Starts React
-│   ├── App.tsx               # Navigation, state and user actions
-│   ├── types.ts              # Shared TypeScript shapes
-│   ├── styles.css            # Original Billora design styles
-│   ├── react-tweaks.css      # React interface refinements
-│   ├── components/
-│   │   ├── Icons.tsx         # Reusable icons
-│   │   ├── Ui.tsx            # Buttons, headings, modal
-│   │   └── FinanceForm.tsx   # Add/edit bill, debt, income, repayment
-│   ├── pages/
-│   │   ├── Overview.tsx      # Charts, summary and upcoming bills
-│   │   ├── Bills.tsx         # Recurring bills
-│   │   ├── Debts.tsx         # Credit cards / loans
-│   │   ├── Planner.tsx       # Interactive debt-free plan
-│   │   └── Settings.tsx      # Income, backups and reset
-│   └── lib/
-│       ├── money.ts          # Formatting, dates & recurrence
-│       ├── planner.ts        # Debt calculation engine
-│       └── storage.ts        # Example data, import/export & migration
-│   └── public/icon.svg          # Site icon
-└── .github/workflows/deploy.yml # Automated Pages build
+web/
+├── index.html               # React entry page
+├── package.json             # Exact dependency versions
+├── src/
+│   ├── App.tsx              # Navigation, account state, CRUD operations
+│   ├── auth/
+│   │   ├── client.ts        # Supabase public client, optional until configured
+│   │   ├── cloud.ts         # User-owned finance snapshots
+│   │   └── AccountDialog.tsx # Sign-in, sign-up and social login UI
+│   ├── components/          # Reusable forms, buttons, animated figures
+│   ├── pages/               # Overview, Bills, Debts, Planner, Settings
+│   ├── lib/                 # Finance calculations, data validation, local storage
+│   ├── premium.css          # Design system, layout, animation, accessibility
+│   ├── types.ts             # Shared TypeScript models
+│   └── main.tsx             # App startup and stylesheets
+supabase/
+└── 001_finance_snapshots.sql # Run only in the new Billora project
+PROJECT_BUDGET.md            # Proposed allocation, £0 actual spend
+.github/workflows/deploy.yml
 ```
 
-## What works
+### Further work before inviting real users
 
-- Monthly income and outgoing figures, bill category chart and upcoming payments.
-- Add, edit, delete and mark recurring bills paid; weekly, four-weekly, monthly, quarterly, annually.
-- Add/edit/delete debts, record repayments, see paid-off progress.
-- Snowball vs avalanche simulator, APR and optional 0% offer end date.
-- Multiple income sources and payment frequencies.
-- Optional JSON import/export and reset. Recognises locally saved data from Version 0.1.
-- Responsive screens for phones and desktops.
-
-## Deploy to GitHub Pages
-
-The root legacy `index.html` remains available while GitHub Pages uses *Deploy from a branch*. The repo includes a workflow to build the Vite app and deploy `dist/` on each push to `main`.
-
-1. Go to **Settings → Pages** in the GitHub repository.
-2. Under **Build and deployment → Source**, select **GitHub Actions** (not *Deploy from a branch*).
-3. Trigger or watch **Actions → Build and deploy Billora**.
-4. Open `https://lukefaulkner180.github.io/billora/` once the Pages deployment is reported successful.
-
-Vite's `base` is `/billora/`, so assets load correctly from a GitHub project Pages URL.
-
-## Next stage: separate secure backend
-
-For real users, create a **new Supabase project**, not the existing DayRidge project. Integrate authentication, PostgreSQL Row Level Security, data export/deletion, and user-owned records before allowing real personal finance storage. This demo has no Supabase connection, service key or bank link.
-
-## Notes on projections
-
-The planner assumes a constant budget of the sum of entered minimums plus extra monthly contributions. It accrues approximate interest monthly and directs excess payments toward the chosen debt. It doesn't simulate new charges, fees, changing lender minimums or all 0% offer terms. Users should always verify lender statements.
+Review authentication redirects, password recovery, API rate limiting, privacy notices, error telemetry, account deletion, cloud data retention and data backups. The interest models are estimates, not regulated financial advice.

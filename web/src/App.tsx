@@ -1,7 +1,8 @@
 import {useEffect, useState} from 'react';
+import type {User} from '@supabase/supabase-js';
 import type {Bill, Debt, FinanceData, Income, Page} from './types';
 import {advanceBill, makeId, pounds, round, today} from './lib/money';
-import {initialData, saveData} from './lib/storage';
+import {emptyData, initialData, saveData} from './lib/storage';
 import {Icon} from './components/Icons';
 import {FinanceForm, newEntityId, readCategory, readFrequency} from './components/FinanceForm';
 import type {Mode} from './components/FinanceForm';
@@ -10,78 +11,159 @@ import {Bills} from './pages/Bills';
 import {Debts} from './pages/Debts';
 import {Planner} from './pages/Planner';
 import {Settings} from './pages/Settings';
+import {AccountDialog} from './auth/AccountDialog';
+import {accountsConfigured,supabase} from './auth/client';
+import {loadCloudData,saveCloudData} from './auth/cloud';
+
 const pages: Record<Page,{name:string,short:string,icon:string}> = {
   overview:{name:'Overview',short:'Home',icon:'overview'},bills:{name:'My bills',short:'Bills',icon:'calendar'},debts:{name:'My debts',short:'Debts',icon:'card'},planner:{name:'Debt-free planner',short:'Planner',icon:'trend'},settings:{name:'Settings & income',short:'Settings',icon:'settings'},
 };
 const pageFromHash = ():Page => window.location.hash.slice(1) in pages ? window.location.hash.slice(1) as Page : 'overview';
 export default function App() {
-  const [page, setPage] = useState<Page>(pageFromHash);
-  const [data, setData] = useState<FinanceData>(initialData);
-  const [mode, setMode] = useState<Mode | null>(null);
-  const [toast, setToast] = useState('');
-  const notify = (message:string) => {setToast(message);};
-  useEffect(() => {
-    const handler = () => setPage(pageFromHash());
+  const [page,setPage]=useState<Page>(pageFromHash);
+  const [data,setData]=useState<FinanceData>(initialData);
+  const [dataOwner,setDataOwner]=useState('local');
+  const [mode,setMode]=useState<Mode|null>(null);
+  const [toast,setToast]=useState('');
+  const [showAccount,setShowAccount]=useState(false);
+  const [user,setUser]=useState<User|null>(null);
+  const [cloudReady,setCloudReady]=useState(false);
+  const [cloudError,setCloudError]=useState('');
+  const [syncStatus,setSyncStatus]=useState<'idle'|'saving'|'saved'|'error'>('idle');
+  const [authLoading,setAuthLoading]=useState(accountsConfigured);
+  const userId=user?.id;
+  const notify=(message:string)=>setToast(message);
+
+  useEffect(()=>{
+    const handler=()=>setPage(pageFromHash());
     window.addEventListener('hashchange',handler);
-    return () => window.removeEventListener('hashchange',handler);
+    return ()=>window.removeEventListener('hashchange',handler);
   },[]);
-  useEffect(() => {if (!saveData(data)) notify('Unable to save locally. Export a backup.');},[data]);
-  useEffect(() => {if (!toast) return;const timer=window.setTimeout(()=>setToast(''),4200);return ()=>window.clearTimeout(timer);},[toast]);
-  const update = (fn:(prev:FinanceData)=>FinanceData) => setData(current=>({...fn(current),mode:'personal'}));
-  const navigate = (next:Page) => {window.location.hash=next;setPage(next);window.scrollTo({top:0,behavior:'smooth'});};
-  const add = (kind:'bill'|'debt'|'income') => setMode({kind});
-  const edit = (kind:'bill'|'debt'|'income',id:string) => {
-    const item = kind === 'bill' ? data.bills.find(b=>b.id===id) : kind === 'debt' ? data.debts.find(d=>d.id===id) : data.incomes.find(i=>i.id===id);
-    if (!item) return;
-    if (kind === 'bill') setMode({kind,item:item as Bill});
-    if (kind === 'debt') setMode({kind,item:item as Debt});
-    if (kind === 'income') setMode({kind,item:item as Income});
+  useEffect(()=>{if(!toast)return;const t=window.setTimeout(()=>setToast(''),4200);return()=>window.clearTimeout(t);},[toast]);
+  useEffect(()=>{
+    if(!supabase)return;
+    let mounted=true;
+    const {data:{subscription}}=supabase.auth.onAuthStateChange((_event,session)=>{
+      if(!mounted)return;
+      setUser(session?.user??null);setAuthLoading(false);
+    });
+    void supabase.auth.getSession().then(({data:result,error})=>{
+      if(!mounted)return;
+      if(error)notify('Sign in session could not be restored.');
+      setUser(result.session?.user??null);setAuthLoading(false);
+    });
+    return ()=>{mounted=false;subscription.unsubscribe();};
+  },[]);
+  useEffect(()=>{
+    let cancelled=false;
+    setCloudReady(false);
+    setCloudError('');
+    setSyncStatus('idle');
+    if(!userId){setData(initialData());setDataOwner('local');return;}
+    // A fresh account starts empty, not with the example data from the demo.
+    setData(emptyData());setDataOwner('loading');
+    void loadCloudData(userId).then(result=>{
+      if(cancelled)return;
+      setData(result);setDataOwner(userId);setCloudReady(true);setSyncStatus('saved');
+    }).catch(error=>{
+      if(cancelled)return;
+      setCloudError(error instanceof Error?error.message:'Could not load your finance data.');
+      setSyncStatus('error');
+    });
+    return ()=>{cancelled=true;};
+  },[userId]);
+  useEffect(()=>{
+    if(userId){
+      if(!cloudReady || cloudError || data.mode!=='personal' || dataOwner!==userId)return;
+      setSyncStatus('saving');
+      let cancelled=false;
+      const timeout=window.setTimeout(()=>{
+        void saveCloudData(userId,data).then(()=>{
+          if(!cancelled)setSyncStatus('saved');
+        }).catch(error=>{
+          if(cancelled)return;
+          setSyncStatus('error');
+          notify(error instanceof Error ? `Sync failed: ${error.message}` : 'Sync failed. Export a backup and check your connection.');
+        });
+      },850);
+      return ()=>{cancelled=true;window.clearTimeout(timeout);};
+    }
+    if(!authLoading && dataOwner==='local' && !saveData(data))notify('Unable to save locally. Export a backup.');
+  },[data,userId,cloudReady,cloudError,authLoading,dataOwner]);
+
+  const update=(fn:(prev:FinanceData)=>FinanceData)=>{
+    if(userId&&!cloudReady){notify('Account data is still loading.');return;}
+    setData(current=>({...fn(current),mode:'personal'}));
   };
-  const remove = (kind:'bill'|'debt'|'income',id:string) => {
-    if (!window.confirm(`Delete this ${kind}? This can't be undone.`)) return;
-    update(current => ({...current,bills:kind==='bill'?current.bills.filter(x=>x.id!==id):current.bills,debts:kind==='debt'?current.debts.filter(x=>x.id!==id):current.debts,incomes:kind==='income'?current.incomes.filter(x=>x.id!==id):current.incomes}));
+  const navigate=(next:Page)=>{window.location.hash=next;setPage(next);window.scrollTo({top:0,behavior:'smooth'});};
+  const add=(kind:'bill'|'debt'|'income')=>setMode({kind});
+  const edit=(kind:'bill'|'debt'|'income',id:string)=>{
+    const item=kind==='bill'?data.bills.find(b=>b.id===id):kind==='debt'?data.debts.find(d=>d.id===id):data.incomes.find(i=>i.id===id);
+    if(!item)return;
+    if(kind==='bill')setMode({kind,item:item as Bill});
+    if(kind==='debt')setMode({kind,item:item as Debt});
+    if(kind==='income')setMode({kind,item:item as Income});
+  };
+  const remove=(kind:'bill'|'debt'|'income',id:string)=>{
+    if(!window.confirm(`Delete this ${kind}? This can't be undone.`))return;
+    update(current=>({...current,bills:kind==='bill'?current.bills.filter(x=>x.id!==id):current.bills,debts:kind==='debt'?current.debts.filter(x=>x.id!==id):current.debts,incomes:kind==='income'?current.incomes.filter(x=>x.id!==id):current.incomes}));
     notify('Item deleted.');
   };
-  const markBillPaid = (id:string) => {
-    const bill = data.bills.find(b=>b.id===id);
-    if (!bill || !window.confirm(`Record ${pounds(bill.amount)} paid for ${bill.name} (due ${bill.nextDue})?`)) return;
+  const markBillPaid=(id:string)=>{
+    const bill=data.bills.find(b=>b.id===id);
+    if(!bill||!window.confirm(`Record ${pounds(bill.amount)} paid for ${bill.name} (due ${bill.nextDue})?`))return;
     update(current=>({...current,bills:current.bills.map(b=>b.id===id?{...b,payments:[...b.payments,{amount:b.amount,date:today(),due:b.nextDue}],nextDue:advanceBill(b)}:b)}));
     notify('Bill marked as paid.');
   };
-  const submit = (openMode:Mode, raw:Record<string,string>) => {
-    const money = (key:string) => round(Math.max(0,Number(raw[key])||0));
-    const existing = openMode.item;
-    if (openMode.kind==='bill') {
+  const submit=(openMode:Mode,raw:Record<string,string>)=>{
+    const money=(key:string)=>round(Math.max(0,Number(raw[key])||0));
+    const existing=openMode.item;
+    if(openMode.kind==='bill'){
       const bill:Bill={id:existing?.id||newEntityId(),name:raw.name.trim().slice(0,100),amount:money('amount'),frequency:readFrequency(raw.frequency),category:readCategory(raw.category),nextDue:raw.nextDue,anchorDay:Number(raw.nextDue.slice(8)),payments:openMode.item?.payments||[]};
       update(prev=>({...prev,bills:existing?prev.bills.map(b=>b.id===bill.id?bill:b):[...prev.bills,bill]}));
-    } else if (openMode.kind==='debt') {
-      const balance = money('balance');
+    }else if(openMode.kind==='debt'){
+      const balance=money('balance');
       const debt:Debt={id:existing?.id||makeId(),name:raw.name.trim().slice(0,100),balance,originalBalance:Math.max(balance,money('originalBalance')||balance),apr:Math.min(100,money('apr')),minPayment:money('minPayment'),promoEnd:raw.promoEnd||'',payments:openMode.item?.payments||[]};
       update(prev=>({...prev,debts:existing?prev.debts.map(d=>d.id===debt.id?debt:d):[...prev.debts,debt]}));
-    } else if(openMode.kind==='income') {
+    }else if(openMode.kind==='income'){
       const income:Income={id:existing?.id||makeId(),name:raw.name.trim().slice(0,100),amount:money('amount'),frequency:readFrequency(raw.frequency)};
       update(prev=>({...prev,incomes:existing?prev.incomes.map(i=>i.id===income.id?income:i):[...prev.incomes,income]}));
-    } else {
-      const requested = money('amount');
-      const payment = Math.min(openMode.item.balance,requested);
-      if(payment <= 0) {notify('Enter a payment greater than £0.');return;}
+    }else{
+      const requested=money('amount');
+      const payment=Math.min(openMode.item.balance,requested);
+      if(payment<=0){notify('Enter a payment greater than £0.');return;}
       update(prev=>({...prev,debts:prev.debts.map(d=>d.id===openMode.item.id?{...d,balance:round(Math.max(0,d.balance-payment)),payments:[...d.payments,{amount:payment,date:raw.date||today()}]}:d)}));
     }
-    notify(openMode.kind==='payment'?'Repayment recorded.':'Changes saved.');
-    setMode(null);
+    notify(openMode.kind==='payment'?'Repayment recorded.':'Changes saved.');setMode(null);
   };
-  const navButton = (id:Page,mobile=false) => <button key={id} className={`${mobile?'':'nav-item '} ${page===id?'is-active':''}`} onClick={()=>navigate(id)} aria-current={page===id?'page':undefined}><span className={mobile?'':'nav-icon'}><Icon name={pages[id].icon}/></span>{mobile?<small>{pages[id].short}</small>:pages[id].name}</button>;
+  const navButton=(id:Page,mobile=false)=><button type="button" key={id} className={`${mobile?'':'nav-item '} ${page===id?'is-active':''}`} onClick={()=>navigate(id)} aria-current={page===id?'page':undefined}><span className={mobile?'':'nav-icon'}><Icon name={pages[id].icon}/></span>{mobile?<small>{pages[id].short}</small>:pages[id].name}</button>;
+  const signOut=async()=>{if(!supabase)return;const {error}=await supabase.auth.signOut();if(error)notify(error.message);else{setShowAccount(false);notify('Signed out.');}};
   return <div className="app-shell">
-    <aside className="sidebar" aria-label="Main menu"><button className="brand" type="button" onClick={()=>navigate('overview')}><span className="brand-icon"><Icon name="trend" size={26}/></span><span>billora<span className="brand-dot">.</span></span></button><div className="nav-intro">YOUR SPACE</div><nav className="nav-list">{(['overview','bills','debts','planner'] as Page[]).map(id=>navButton(id))}</nav><div className="nav-intro lower">PREFERENCES</div><nav className="nav-list">{navButton('settings')}</nav><div className="sidebar-bottom"><div className="help-card"><span className="help-sparkle">✦</span><strong>Small steps. Big progress.</strong><p>A little clarity today can change tomorrow.</p></div><div className="privacy-foot"><Icon name="shield"/> Local prototype · Not synced</div></div></aside>
-    <main className="main"><header className="topbar"><div className="mobile-brand"><span className="mobile-logo">✳</span><strong>billora<span className="brand-dot">.</span></strong></div><div className="breadcrumb"><span>My workspace</span><span className="crumb-arrow">/</span><strong>{pages[page].name}</strong></div><div className="topbar-actions"><span className="demo-pill"><span/> Local demo</span><div className="user-avatar">B</div></div></header><div className="content" aria-live="polite">
-      {page==='overview' && <Overview data={data} add={kind=>add(kind)} navigate={navigate}/>}
-      {page==='bills' && <Bills data={data} add={()=>add('bill')} edit={id=>edit('bill',id)} remove={id=>remove('bill',id)} pay={markBillPaid}/>}
-      {page==='debts' && <Debts data={data} add={()=>add('debt')} edit={id=>edit('debt',id)} remove={id=>remove('debt',id)} pay={id=>{const debt=data.debts.find(d=>d.id===id);if(debt)setMode({kind:'payment',item:debt});}}/>}
-      {page==='planner' && <Planner data={data} onChange={settings=>update(prev=>({...prev,settings}))}/>}
-      {page==='settings' && <Settings data={data} add={()=>add('income')} edit={id=>edit('income',id)} remove={id=>remove('income',id)} replace={setData} notify={notify}/>}
-    </div></main>
+    <aside className="sidebar" aria-label="Main menu">
+      <button className="brand" type="button" onClick={()=>navigate('overview')}><span className="brand-icon"><Icon name="trend" size={26}/></span><span>billora<span className="brand-dot">.</span></span></button>
+      <div className="sidebar-caption">A better relationship with money.</div>
+      <div className="nav-intro">YOUR WORKSPACE</div>
+      <nav className="nav-list">{(['overview','bills','debts','planner'] as Page[]).map(id=>navButton(id))}</nav>
+      <div className="nav-intro lower">ACCOUNT</div><nav className="nav-list">{navButton('settings')}</nav>
+      <div className="sidebar-bottom">
+        <div className="help-card"><span className="help-sparkle">✦</span><strong>Make money feel lighter.</strong><p>Little steps today. More freedom tomorrow.</p><div className="help-progress"><span/></div></div>
+        <button className="sidebar-account" type="button" onClick={()=>setShowAccount(true)}><span className="sidebar-avatar">{user?.email?.[0]?.toUpperCase()||'B'}</span><span><strong>{user?'My Billora account':'Create an account'}</strong><small>{user?.email||'Keep track of your progress'}</small></span><Icon name="arrow"/></button>
+      </div>
+    </aside>
+    <main className="main"><header className="topbar"><div className="mobile-brand"><span className="mobile-logo">✳</span><strong>billora<span className="brand-dot">.</span></strong></div><div className="breadcrumb"><span>My money</span><span className="crumb-arrow">/</span><strong>{pages[page].name}</strong></div><div className="topbar-actions"><span className={`demo-pill ${user?'sync-badge':''}`}><span/>{user?syncStatus==='saved'?'Synced securely':syncStatus==='saving'?'Saving…':syncStatus==='error'?'Sync issue':'Loading data…':'Preview mode'}</span><button type="button" className="account-trigger" aria-label={user?'Manage account':'Sign in or create account'} onClick={()=>setShowAccount(true)}><span className="user-avatar">{user?.email?.[0]?.toUpperCase()||'B'}</span><span className="account-trigger-text">{user?'My account':'Sign in'} <Icon name="arrow"/></span></button></div></header>
+      <div className="content" aria-live="polite">
+        {userId && (!cloudReady||cloudError)?<div className="cloud-state"><div className="cloud-state-icon"><Icon name="shield"/></div><h2>{cloudError?'Unable to load your finances':'Opening your secure account…'}</h2><p>{cloudError?`Your financial data has not been overwritten. ${cloudError}`:'Checking your securely saved bills and repayments.'}</p>{cloudError&&<button className="btn btn-secondary" onClick={()=>void loadCloudData(userId).then(result=>{setData(result);setDataOwner(userId);setCloudReady(true);setCloudError('');}).catch(error=>setCloudError(error instanceof Error?error.message:'Try again later.'))}>Try again</button>}</div>:<>
+          {page==='overview'&&<Overview data={data} add={kind=>add(kind)} navigate={navigate}/>}
+          {page==='bills'&&<Bills data={data} add={()=>add('bill')} edit={id=>edit('bill',id)} remove={id=>remove('bill',id)} pay={markBillPaid}/>}
+          {page==='debts'&&<Debts data={data} add={()=>add('debt')} edit={id=>edit('debt',id)} remove={id=>remove('debt',id)} pay={id=>{const debt=data.debts.find(d=>d.id===id);if(debt)setMode({kind:'payment',item:debt});}}/>}
+          {page==='planner'&&<Planner data={data} onChange={settings=>update(prev=>({...prev,settings}))}/>}
+          {page==='settings'&&<Settings data={data} add={()=>add('income')} edit={id=>edit('income',id)} remove={id=>remove('income',id)} replace={value=>setData({...value,mode:'personal'})} cloud={Boolean(userId)} notify={notify}/>}
+        </>}
+      </div>
+    </main>
     <nav className="mobile-nav" aria-label="Mobile menu">{(Object.keys(pages) as Page[]).map(id=>navButton(id,true))}</nav>
-    {mode && <FinanceForm key={`${mode.kind}-${mode.item?.id||'new'}`} mode={mode} close={()=>setMode(null)} save={submit}/>}
-    {toast && <div className="toast is-visible" role="status">{toast}</div>}
+    {mode&&<FinanceForm key={`${mode.kind}-${mode.item?.id||'new'}`} mode={mode} close={()=>setMode(null)} save={submit}/>}
+    {showAccount&&(user?<div className="auth-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)setShowAccount(false);}}><section className="signed-dialog" role="dialog" aria-modal="true" aria-label="Your Billora account"><button className="auth-close" onClick={()=>setShowAccount(false)} aria-label="Close"><Icon name="close"/></button><div className="signed-badge"><Icon name="shield"/></div><h2>Your own little money space.</h2><p>Signed in as <strong>{user.email}</strong></p><div className="signed-state">{syncStatus==='saved'?'✓ Your account data is synced':syncStatus==='saving'?'Saving your changes…':syncStatus==='error'?'Your changes could not be saved — please keep this page open.':'Loading your finance data…'}</div><button className="auth-submit" type="button" onClick={()=>void signOut()}>Sign out <span>↗</span></button></section></div>:<AccountDialog onClose={()=>setShowAccount(false)} notice={notify}/>)}
+    {toast&&<div className="toast is-visible" role="status">{toast}</div>}
   </div>;
 }
