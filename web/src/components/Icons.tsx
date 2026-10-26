@@ -11,6 +11,8 @@ const paths: Record<string, ReactNode> = {
   bolt: <path d="m13 2-9 12h7l-1 8 10-13h-7l0-7Z"/>,
   repeat: <path d="m17 1 4 4-4 4M3 11V8a3 3 0 0 1 3-3h15M7 23l-4-4 4-4M21 13v3a3 3 0 0 1-3 3H3"/>,
   receipt: <><path d="M4 3h16v18l-4-2-4 2-4-2-4 2V3Z"/><path d="M8 8h8M8 12h8"/></>,
+  camera: <><path d="M3 7a2 2 0 0 1 2-2h3l1.5-2h5L16 5h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/><circle cx="12" cy="13" r="3.5"/></>,
+  menu: <><path d="M4 7h16M4 12h16M4 17h16"/></>,
   plus: <path d="M12 5v14M5 12h14"/>,
   arrow: <path d="M5 12h14m-6-6 6 6-6 6"/>,
   check: <path d="m4 12 5 5L20 6"/>,

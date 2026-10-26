@@ -1,0 +1,87 @@
+
+/* Billora interaction system — branded financial confirmation, in-app camera and mobile nav. */
+.billora-confirm-backdrop,.billora-camera-backdrop{
+  position:fixed;inset:0;z-index:1600;display:grid;place-items:center;
+  background:rgba(4,11,15,.82);padding:18px;
+  backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
+}
+.billora-confirm-dialog,.billora-camera-dialog{
+  width:min(100%,440px);color:#ebf7f1;
+  border:1px solid #3a5151;border-radius:19px;
+  background:#142127;box-shadow:0 22px 90px #0009;
+}
+.billora-confirm-dialog{padding:28px;max-height:calc(100dvh - 24px);overflow-y:auto}
+.billora-confirm-icon{display:grid;place-items:center;width:54px;height:54px;border:1px solid #35654e;border-radius:15px;background:#203d30;color:#86e6b5;margin-bottom:18px}
+.billora-confirm-icon.is-danger{color:#ffaaa4;border-color:#6b4045;background:#3c252b}
+.billora-confirm-dialog h2{color:#f2fbf6;font-weight:790;letter-spacing:-.75px;font-size:23px;line-height:1.2;margin:0 0 9px}
+.billora-confirm-message{color:#e2f2e9;font-weight:700;font-size:17px;line-height:1.55;margin:0 0 8px}
+.billora-confirm-detail{font-size:13px;line-height:1.6;color:#abc2bd;margin:0}
+.billora-confirm-actions,.billora-camera-actions{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:25px}
+.billora-secondary-button,.billora-primary-button{
+ min-height:48px;min-width:0;padding:11px 14px;display:inline-flex;align-items:center;justify-content:center;gap:7px;
+ font:inherit;font-size:13px;font-weight:800;border-radius:11px;cursor:pointer;
+}
+.billora-secondary-button{border:1px solid #425b60;color:#dbece5;background:#203037}
+.billora-primary-button{border:1px solid #83efbe;color:#0c291e;background:#8befc0}
+.billora-primary-button.is-danger{background:#eb8186;border-color:#eb8186;color:#2b1116}
+.billora-secondary-button:hover{background:#293f43}
+.billora-primary-button:hover{filter:brightness(1.08)}
+.billora-primary-button:disabled{opacity:.48;cursor:not-allowed}
+.billora-primary-button:focus-visible,.billora-secondary-button:focus-visible,.billora-camera-close:focus-visible{outline:2px solid #c6ffe0;outline-offset:3px}
+.billora-camera-dialog{width:min(100%,530px);max-height:calc(100dvh - 24px);overflow:auto;padding:22px}
+.billora-camera-head{display:flex;align-items:start;justify-content:space-between;gap:12px}
+.billora-modal-overline{color:#8ed9b5;font-size:10px;font-weight:850;letter-spacing:1.3px;margin-bottom:5px}
+.billora-camera-head h2{color:#f0f9f5;margin:0;font-size:24px;letter-spacing:-.6px}
+.billora-camera-close{width:40px;height:40px;display:grid;place-items:center;background:#22363a;border:1px solid #3c5656;color:#daeee4;border-radius:11px}
+.billora-camera-hint{font-size:13px;line-height:1.6;color:#afc8be;margin:13px 0 15px}
+.billora-camera-view{position:relative;width:100%;min-height:190px;aspect-ratio:3/4;max-height:55dvh;overflow:hidden;background:#061012;border-radius:12px;border:1px solid #3b554e}
+.billora-camera-view video{width:100%;height:100%;display:block;object-fit:contain}
+.billora-camera-guide{pointer-events:none;position:absolute;inset:12%;border:2px solid rgba(143,239,193,.7);border-radius:9px;box-shadow:0 0 0 999px rgba(0,0,0,.08)}
+.billora-camera-placeholder{position:absolute;inset:0;display:flex;gap:14px;flex-direction:column;align-items:center;justify-content:center;color:#c1e9d1;background:#0c191b;font-size:14px;text-align:center}
+.billora-camera-error{border:1px solid #8c5652;background:#372726;color:#ffc6c0;font-size:13px;padding:10px 13px;border-radius:10px;margin:13px 0 0}
+.billora-camera-actions{margin-top:16px}
+.billora-camera-privacy{color:#99b9ab;display:flex;gap:8px;font-size:11px;line-height:1.5;margin:14px 0 0}
+.billora-camera-privacy svg{flex-shrink:0;margin-top:1px;color:#83dcb0}
+.billora-more-panel,.billora-more-scrim{display:none}
+@media(max-width:900px){
+ .mobile-nav.billora-bottom-nav{
+   display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-items:stretch;
+   left:max(10px,env(safe-area-inset-left));right:max(10px,env(safe-area-inset-right));
+   width:auto;bottom:max(10px,env(safe-area-inset-bottom));border-radius:19px;
+   background:rgba(16,29,35,.97);border:1px solid #38504e;
+   box-shadow:0 14px 36px rgba(0,0,0,.52);padding:7px;
+   gap:3px;z-index:130;max-width:580px;margin-inline:auto;
+ }
+ .mobile-nav.billora-bottom-nav button{
+   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+   min-width:0;min-height:55px;padding:7px 3px 6px;
+   border:0;border-radius:12px;background:transparent;color:#9fb7b9;
+ }
+ .mobile-nav.billora-bottom-nav button.is-active{
+   color:#9aefc5;background:#213d34;box-shadow:none;
+ }
+ .mobile-nav.billora-bottom-nav button svg{width:21px;height:21px}
+ .mobile-nav.billora-bottom-nav button small{font-size:11px;line-height:1.2;font-weight:650;letter-spacing:0;white-space:nowrap}
+ .billora-more-scrim{display:block;position:fixed;inset:0;z-index:118;border:0;background:rgba(1,8,10,.4)}
+ .billora-more-panel{
+   display:grid;gap:3px;position:fixed;
+   left:max(10px,env(safe-area-inset-left));right:max(10px,env(safe-area-inset-right));
+   max-width:580px;margin:auto;bottom:calc(91px + env(safe-area-inset-bottom));z-index:126;
+   border-radius:17px;border:1px solid #3e5c56;background:#172b2e;color:#ebf8f0;
+   padding:12px;box-shadow:0 22px 60px #0009
+ }
+ .billora-more-head{display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:800;padding:8px 10px 12px}
+ .billora-more-head button{background:transparent;border:0;color:#b9d8c9;display:grid;place-items:center;width:35px;height:35px}
+ .billora-more-panel>button{display:flex;gap:13px;align-items:center;width:100%;min-height:51px;border:0;border-radius:10px;padding:10px 12px;text-align:left;background:transparent;color:#e6f6ed;font-size:14px;font-weight:650}
+ .billora-more-panel>button:hover,.billora-more-panel>button:focus-visible{background:#2a483c}
+ .billora-more-panel>button svg:first-child{color:#9de8bb}
+ .billora-more-panel>button svg:last-child{margin-left:auto;color:#8ca79d}
+}
+@media(max-width:650px){
+ .billora-camera-backdrop{padding:0;align-items:stretch}
+ .billora-camera-dialog{width:100%;height:100dvh;max-height:100dvh;border:0;border-radius:0;padding:calc(18px + env(safe-area-inset-top)) 18px calc(15px + env(safe-area-inset-bottom));display:flex;flex-direction:column}
+ .billora-camera-view{flex:1;min-height:170px;max-height:none}
+ .billora-camera-actions{flex-shrink:0}
+ .billora-confirm-dialog{padding:24px 21px;border-radius:17px}
+}
+@media(prefers-reduced-motion:reduce){.billora-confirm-dialog,.billora-camera-dialog{animation:none}}

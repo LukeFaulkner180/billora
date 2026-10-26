@@ -4,6 +4,7 @@ import type {Bill, Debt, FinanceData, Income, Page} from './types';
 import {advanceBill, makeId, pounds, round, today} from './lib/money';
 import {emptyData, initialData, saveData} from './lib/storage';
 import {Icon} from './components/Icons';
+import {ConfirmDialog,type ConfirmationOptions,type ConfirmationState} from './components/ConfirmDialog';
 import {Brand} from './components/Brand';
 import {Welcome} from './pages/Welcome';
 import {FinanceForm, newEntityId, readCategory, readFrequency} from './components/FinanceForm';
@@ -47,8 +48,12 @@ export default function App() {
   const [authLoading,setAuthLoading]=useState(accountsConfigured);
   const [premiumAccess,setPremiumAccess]=useState(false);
   const [showPremium,setShowPremium]=useState(false);
+  const [confirmation,setConfirmation]=useState<ConfirmationState|null>(null);
+  const [moreOpen,setMoreOpen]=useState(false);
   const userId=user?.id;
   const notify=(message:string)=>setToast(message);
+  const requestConfirm=(options:ConfirmationOptions,onConfirm:()=>void)=>setConfirmation({...options,onConfirm});
+  const acceptConfirm=()=>{const action=confirmation?.onConfirm;setConfirmation(null);action?.();};
 
   useEffect(()=>{
     const handler=()=>setPage(pageFromHash());
@@ -122,7 +127,7 @@ export default function App() {
     if(userId&&!cloudReady){notify('Account data is still loading.');return;}
     setData(current=>({...fn(current),mode:'personal'}));
   };
-  const navigate=(next:Page)=>{window.location.hash=next;setPage(next);window.scrollTo({top:0,behavior:'smooth'});};
+  const navigate=(next:Page)=>{setMoreOpen(false);window.location.hash=next;setPage(next);window.scrollTo({top:0,behavior:'smooth'});};
   const add=(kind:'bill'|'debt'|'income')=>setMode({kind});
   const edit=(kind:'bill'|'debt'|'income',id:string)=>{
     const item=kind==='bill'?data.bills.find(b=>b.id===id):kind==='debt'?data.debts.find(d=>d.id===id):data.incomes.find(i=>i.id===id);
@@ -132,15 +137,20 @@ export default function App() {
     if(kind==='income')setMode({kind,item:item as Income});
   };
   const remove=(kind:'bill'|'debt'|'income',id:string)=>{
-    if(!window.confirm(`Delete this ${kind}? This can't be undone.`))return;
-    update(current=>({...current,bills:kind==='bill'?current.bills.filter(x=>x.id!==id):current.bills,debts:kind==='debt'?current.debts.filter(x=>x.id!==id):current.debts,incomes:kind==='income'?current.incomes.filter(x=>x.id!==id):current.incomes}));
-    notify('Item deleted.');
+    const name=kind==='bill'?data.bills.find(x=>x.id===id)?.name:kind==='debt'?data.debts.find(x=>x.id===id)?.name:data.incomes.find(x=>x.id===id)?.name;
+    requestConfirm({title:`Delete ${kind}?`,message:name||'This item',detail:'This will remove the item from your Billora records.',confirmLabel:'Delete',tone:'danger'},()=>{
+      update(current=>({...current,bills:kind==='bill'?current.bills.filter(x=>x.id!==id):current.bills,debts:kind==='debt'?current.debts.filter(x=>x.id!==id):current.debts,incomes:kind==='income'?current.incomes.filter(x=>x.id!==id):current.incomes}));
+      notify('Item deleted.');
+    });
   };
   const markBillPaid=(id:string)=>{
     const bill=data.bills.find(b=>b.id===id);
-    if(!bill||!window.confirm(`Record ${pounds(bill.amount)} paid for ${bill.name} (due ${bill.nextDue})?`))return;
-    update(current=>({...current,bills:current.bills.map(b=>b.id===id?{...b,payments:[...b.payments,{amount:b.amount,date:today(),due:b.nextDue}],nextDue:advanceBill(b)}:b)}));
-    notify('Bill marked as paid.');
+    if(!bill)return;
+    const dueDate=new Date(bill.nextDue+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+    requestConfirm({title:'Mark bill as paid?',message:`${bill.name} · ${pounds(bill.amount)}`,detail:`Due ${dueDate}. Recording the payment will advance the next due date.`,confirmLabel:'Mark as paid',tone:'success'},()=>{
+      update(current=>({...current,bills:current.bills.map(b=>b.id===id?{...b,payments:[...b.payments,{amount:b.amount,date:today(),due:b.nextDue}],nextDue:advanceBill(b)}:b)}));
+      notify('Bill marked as paid.');
+    });
   };
   const submit=(openMode:Mode,raw:Record<string,string>)=>{
     const money=(key:string)=>round(Math.max(0,Number(raw[key])||0));
@@ -212,15 +222,26 @@ export default function App() {
       <div className="content" aria-live="polite">
         {userId && (!cloudReady||cloudError)?<div className="cloud-state"><div className="cloud-state-icon"><Icon name="shield"/></div><h2>{cloudError?'Unable to load your finances':'Opening your secure account…'}</h2><p>{cloudError?`Your financial data has not been overwritten. ${cloudError}`:'Checking your securely saved bills and repayments.'}</p>{cloudError&&<button className="btn btn-secondary" onClick={()=>void loadCloudData(userId).then(result=>{setData(result);setDataOwner(userId);setCloudReady(true);setCloudError('');}).catch(error=>setCloudError(error instanceof Error?error.message:'Try again later.'))}>Try again</button>}</div>:<>
           {page==='overview'&&<Overview data={data} add={kind=>add(kind)} navigate={navigate} openSignup={()=>openAccount('signup')} signedIn={Boolean(user)}/>} 
-          {page==='budget'&&<Budget data={data} update={update} notify={notify} premium={premiumAccess} demoPreview={!user && showDemo} onUpgrade={()=>setShowPremium(true)}/>}
+          {page==='budget'&&<Budget data={data} update={update} notify={notify} requestConfirm={requestConfirm} premium={premiumAccess} demoPreview={!user && showDemo} onUpgrade={()=>setShowPremium(true)}/>}
           {page==='bills'&&<Bills data={data} add={()=>add('bill')} edit={id=>edit('bill',id)} remove={id=>remove('bill',id)} pay={markBillPaid}/>}
           {page==='debts'&&<Debts data={data} add={()=>add('debt')} edit={id=>edit('debt',id)} remove={id=>remove('debt',id)} pay={id=>{const debt=data.debts.find(d=>d.id===id);if(debt)setMode({kind:'payment',item:debt});}}/>}
           {page==='planner'&&<Planner data={data} onChange={settings=>update(prev=>({...prev,settings}))}/>}
-          {page==='settings'&&<Settings data={data} add={()=>add('income')} edit={id=>edit('income',id)} remove={id=>remove('income',id)} replace={value=>setData({...value,mode:'personal'})} cloud={Boolean(userId)} notify={notify}/>}
+          {page==='settings'&&<Settings data={data} add={()=>add('income')} edit={id=>edit('income',id)} remove={id=>remove('income',id)} replace={value=>setData({...value,mode:'personal'})} cloud={Boolean(userId)} notify={notify} requestConfirm={requestConfirm}/>}
         </>}
       </div>
     </main>
-    <nav className="mobile-nav" aria-label="Mobile menu">{(Object.keys(pages) as Page[]).map(id=>navButton(id,true))}</nav>
+    {moreOpen&&<><button type="button" className="billora-more-scrim" aria-label="Close more menu" onClick={()=>setMoreOpen(false)}/>
+      <section id="billora-more-menu" className="billora-more-panel" aria-label="Additional navigation">
+        <div className="billora-more-head"><strong>More from Billora</strong><button type="button" aria-label="Close menu" onClick={()=>setMoreOpen(false)}><Icon name="close"/></button></div>
+        <button type="button" onClick={()=>navigate('planner')}><Icon name="trend"/> Debt-free planner <Icon name="arrow"/></button>
+        <button type="button" onClick={()=>navigate('settings')}><Icon name="settings"/> Settings & income <Icon name="arrow"/></button>
+        {!user&&<button type="button" onClick={()=>{setMoreOpen(false);goHome();}}><Icon name="home"/> Billora website <Icon name="arrow"/></button>}
+      </section></>}
+    <nav className="mobile-nav billora-bottom-nav" aria-label="Mobile menu">
+      {(['overview','budget','bills','debts'] as Page[]).map(id=>navButton(id,true))}
+      <button type="button" className={moreOpen||page==='settings'||page==='planner'?'is-active':''} aria-expanded={moreOpen} aria-controls="billora-more-menu" onClick={()=>setMoreOpen(open=>!open)}><Icon name="menu"/><small>More</small></button>
+    </nav>
+    {confirmation&&<ConfirmDialog confirmation={confirmation} onCancel={()=>setConfirmation(null)} onAccept={acceptConfirm}/>}
     {mode&&<FinanceForm key={`${mode.kind}-${mode.item?.id||'new'}`} mode={mode} close={()=>setMode(null)} save={submit}/>}
     {accountModal}
     {showPremium&&<PremiumDialog onClose={()=>setShowPremium(false)} signedIn={Boolean(user)} onAccount={()=>openAccount('signup')}/>}

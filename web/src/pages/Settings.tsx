@@ -4,16 +4,17 @@ import {frequencies, monthly, pounds, total} from '../lib/money';
 import {emptyData, exportData, normaliseData} from '../lib/storage';
 import {Button, Empty, PageHeading} from '../components/Ui';
 import {Icon} from '../components/Icons';
-export function Settings({data,add,edit,remove,replace,cloud,notify}: {data: FinanceData;add:()=>void;edit:(id:string)=>void;remove:(id:string)=>void;replace:(data:FinanceData)=>void;cloud:boolean;notify:(s:string)=>void}) {
+import type {ConfirmRequest} from '../components/ConfirmDialog';
+export function Settings({data,add,edit,remove,replace,cloud,notify,requestConfirm}: {data: FinanceData;add:()=>void;edit:(id:string)=>void;remove:(id:string)=>void;replace:(data:FinanceData)=>void;cloud:boolean;notify:(s:string)=>void;requestConfirm:ConfirmRequest}) {
   const fileRef = useRef<HTMLInputElement>(null);
-  const start = () => {if (window.confirm('Remove all bills, debts, spending, savings goals and income from this workspace? This cannot be undone.')) replace(emptyData())};
+  const start=()=>requestConfirm({title:'Clear all Billora data?',message:'Remove bills, debts, income, spending and savings goals from this workspace.',detail:'This cannot be undone. Export a backup first if you need one.',confirmLabel:'Clear all data',tone:'danger'},()=>replace(emptyData()));
   const restore = async (file: File | undefined) => {
     if(!file) return;
     try {
       if(file.size > 2_000_000) throw new Error('The backup file is too large.');
       const parsed: unknown = JSON.parse(await file.text());
       const incoming = normaliseData(parsed);
-      if(window.confirm('Replace your current Billora data with the contents of your backup?')) {replace({...incoming,mode:'personal'});notify('Backup imported successfully.');}
+      requestConfirm({title:'Restore this backup?',message:'This will replace your current bills, debts, spending and goals.',detail:'You can export your current data before continuing.',confirmLabel:'Restore backup',tone:'danger'},()=>{replace({...incoming,mode:'personal'});notify('Backup imported successfully.');});
     } catch (e) {notify(e instanceof Error?e.message:'Could not import backup.');}
     finally {if (fileRef.current) fileRef.current.value = '';}
   };

@@ -1,11 +1,13 @@
-import {useRef,useState,type FormEvent} from 'react';
+import {useState,type FormEvent} from 'react';
+import {ReceiptCamera} from '../components/ReceiptCamera';
+import type {ConfirmRequest} from '../components/ConfirmDialog';
 import type {FinanceData,SpendingCategory,SpendingEntry,SpendingPeriod,SavingsGoal,CategoryBudgets} from '../types';
 import {Icon} from '../components/Icons';
 import {PageHeading} from '../components/Ui';
 import {dateLocal,money,parseReceipt,periodBounds,periodSpending,spendingCategories} from '../lib/spending';
-type Props={data:FinanceData;update:(fn:(prev:FinanceData)=>FinanceData)=>void;notify:(message:string)=>void;premium:boolean;demoPreview:boolean;onUpgrade:()=>void};
+type Props={data:FinanceData;update:(fn:(prev:FinanceData)=>FinanceData)=>void;notify:(message:string)=>void;premium:boolean;demoPreview:boolean;onUpgrade:()=>void;requestConfirm:ConfirmRequest};
 const safeAmount=(v:string)=>{const n=Number(v);return Number.isFinite(n)?Math.min(1e8,Math.max(0,Math.round(n*100)/100)):0;};
-export function Budget({data,update,notify,premium,demoPreview,onUpgrade}:Props){
+export function Budget({data,update,notify,premium,demoPreview,onUpgrade,requestConfirm}:Props){
   // Public demo may exercise local OCR, but verified cloud accounts still require Premium.
   const canScanReceipt = premium || demoPreview;
   const [period,setPeriod]=useState<SpendingPeriod>('weekly');
@@ -20,9 +22,8 @@ export function Budget({data,update,notify,premium,demoPreview,onUpgrade}:Props)
   const [source,setSource]=useState<'receipt'|'manual'>('manual');
   const [goalName,setGoalName]=useState('');const [goalTarget,setGoalTarget]=useState('');const [goalDate,setGoalDate]=useState('');
   const [contribution,setContribution]=useState<Record<string,string>>({});
-  const [scanning,setScanning]=useState(false);const [scanMessage,setScanMessage]=useState('');
+  const [scanning,setScanning]=useState(false);const [cameraOpen,setCameraOpen]=useState(false);const [scanMessage,setScanMessage]=useState('');
   const [confidence,setConfidence]=useState<'labelled'|'unlabelled'|'none'>('none');
-  const fileRef=useRef<HTMLInputElement>(null);
   const [rangeStart,rangeEnd]=periodBounds(period);
   const spent=periodSpending(data.spending,period),weekSpent=periodSpending(data.spending,'weekly');
   const remaining=data.settings.weeklyBudget-weekSpent;
@@ -39,7 +40,7 @@ export function Budget({data,update,notify,premium,demoPreview,onUpgrade}:Props)
     setShowExpense(false);reset();notify(editing?'Purchase updated.':'Purchase added.');
   }
   function edit(item:SpendingEntry){setEditing(item.id);setName(item.name);setAmount(String(item.amount));setCategory(item.category);setDate(item.date);setSource(item.source);setScanMessage('');setShowExpense(true);}
-  function erase(item:SpendingEntry){if(!window.confirm('Delete '+item.name+' ('+money(item.amount)+')?'))return;update(prev=>({...prev,spending:prev.spending.filter(x=>x.id!==item.id)}));notify('Purchase deleted.');}
+  function erase(item:SpendingEntry){requestConfirm({title:'Delete this purchase?',message:item.name+' · '+money(item.amount),detail:'This purchase will be removed from your spending totals.',confirmLabel:'Delete purchase',tone:'danger'},()=>{update(prev=>({...prev,spending:prev.spending.filter(x=>x.id!==item.id)}));notify('Purchase deleted.');});}
   function addGoal(e:FormEvent<HTMLFormElement>){e.preventDefault();const target=safeAmount(goalTarget);if(!goalName.trim()||!target)return notify('Enter a goal and a target above £0.');
     const item:SavingsGoal={id:crypto.randomUUID(),name:goalName.trim().slice(0,100),target,saved:0,targetDate:goalDate};
     update(prev=>({...prev,savingsGoals:[...prev.savingsGoals,item]}));setGoalName('');setGoalTarget('');setGoalDate('');setShowGoal(false);notify('Goal added.');
@@ -48,9 +49,9 @@ export function Budget({data,update,notify,premium,demoPreview,onUpgrade}:Props)
     update(prev=>({...prev,savingsGoals:prev.savingsGoals.map(x=>x.id===goal.id?{...x,saved:Math.round((x.saved+value)*100)/100}:x)}));
     setContribution(x=>({...x,[goal.id]:''}));notify('Goal updated. No money has been moved.');
   }
-  async function scan(file?:File){if(!file)return;
+  async function scan(file:Blob){
     if(!canScanReceipt){onUpgrade();return;}
-    if(!file.type.startsWith('image/')||file.size>12_000_000){setScanMessage('Choose a receipt photo under 12MB.');return;}
+    if(!file.type.startsWith('image/')||file.size>12_000_000){setScanMessage('The camera image is too large. Try again.');return;}
     setScanning(true);setScanMessage('Reading on your phone or computer. The first scan downloads OCR data.');
     try{const {createWorker}=await import('tesseract.js');const worker=await createWorker('eng');let text='';
       try{const result=await worker.recognize(file);text=result.data.text;}finally{await worker.terminate();}
@@ -58,15 +59,16 @@ export function Budget({data,update,notify,premium,demoPreview,onUpgrade}:Props)
       setSource('receipt');setConfidence(guess.confidence);setShowExpense(true);
       setScanMessage(guess.total===null?'A total could not be identified. Please enter it manually.':'Receipt read. Confirm the amount, shop, date and category.');
     }catch{setScanMessage('Unable to scan that picture. Try a sharper photo or enter the total manually.');setShowExpense(true);}
-    finally{setScanning(false);if(fileRef.current)fileRef.current.value='';}
+    finally{setScanning(false);}
   }
   return <div className="budget-page">
     <PageHeading eyebrow="Everyday money" title="Budget & spending" description="See where your money goes, set flexible spending limits and make progress on your goals."/>
     <div className="premium-intro"><div><strong>{premium?'Premium budgeting enabled':demoPreview?'Try receipt scanning in the demo':'Meet Billora Premium'}</strong><p>{premium?'Plan each category and scan receipts into your personal spending.':demoPreview?'Scan a receipt for free while exploring. Weekly budgets and category limits remain Premium features.':'Upgrade to unlock weekly limits, category budgets and receipt photo scanning.'}</p></div>{!premium&&<button type="button" onClick={onUpgrade}>Explore Premium</button>}</div>
     {demoPreview&&<p className="budget-demo-scanner-note" role="note"><Icon name="shield" size={17}/> <span><strong>Demo scanner unlocked.</strong> Receipt images are processed on your device and are not saved. Confirmed purchase details stay in this browser, not in a Billora account. Avoid receipts containing sensitive personal details.</span></p>}
     <div className="budget-tools"><button type="button" className="btn btn-primary" onClick={()=>{reset();setShowExpense(true);}}><Icon name="plus"/> Add spending</button>
-      <button type="button" className="btn btn-secondary" disabled={scanning} onClick={()=>canScanReceipt?fileRef.current?.click():onUpgrade()}><Icon name="receipt"/>{scanning?'Scanning…':'Scan receipt'}</button>
-      <input ref={fileRef} type="file" accept="image/*" capture="environment" aria-label="Take or upload a receipt photo" hidden onChange={e=>void scan(e.target.files?.[0])}/></div>
+      <button type="button" className="btn btn-secondary" disabled={scanning} onClick={()=>canScanReceipt?setCameraOpen(true):onUpgrade()}><Icon name="receipt"/>{scanning?'Scanning…':'Scan receipt'}</button>
+    </div>
+    {cameraOpen&&<ReceiptCamera onClose={()=>setCameraOpen(false)} onCapture={photo=>{setCameraOpen(false);void scan(photo);}}/>}
     {scanMessage&&!showExpense&&<p role="status" className="budget-message">{scanMessage}</p>}
     <div className="budget-summary">
       <section className="budget-dark-panel"><span className="budget-kicker">YOUR WEEKLY BUDGET</span><strong className="budget-number">{money(data.settings.weeklyBudget)}</strong>
@@ -110,7 +112,7 @@ export function Budget({data,update,notify,premium,demoPreview,onUpgrade}:Props)
         {showGoal&&<form className="budget-goal-form" onSubmit={addGoal}><input required maxLength={100} placeholder="Goal name, e.g. holiday" aria-label="Goal name" value={goalName} onChange={e=>setGoalName(e.target.value)}/>
           <div><input required type="number" min="0.01" step="0.01" placeholder="Target £" aria-label="Savings target" value={goalTarget} onChange={e=>setGoalTarget(e.target.value)}/><input type="date" aria-label="Target date optional" value={goalDate} onChange={e=>setGoalDate(e.target.value)}/></div>
           <button type="submit" className="btn btn-primary">Create goal</button></form>}
-        {data.savingsGoals.length?data.savingsGoals.map(g=>{const pct=Math.min(100,Math.round(g.saved/g.target*100));return <div className="budget-goal" key={g.id}><div className="budget-goal-heading"><strong>{g.name}</strong><button className="mini-btn" type="button" aria-label={'Delete '+g.name} onClick={()=>{if(window.confirm('Delete savings goal '+g.name+'?'))update(prev=>({...prev,savingsGoals:prev.savingsGoals.filter(x=>x.id!==g.id)}));}}><Icon name="trash"/></button></div><div className="budget-progress"><span>{money(g.saved)} of {money(g.target)}</span><strong>{pct}%</strong></div><div className="budget-meter"><span style={{width:pct+'%'}}/></div>{g.targetDate&&<small>Target date: {g.targetDate}</small>}<form className="budget-contribute" onSubmit={e=>{e.preventDefault();saveContribution(g);}}><input type="number" inputMode="decimal" min="0.01" step="0.01" aria-label={'Add savings towards '+g.name} placeholder="Amount saved £" value={contribution[g.id]||''} onChange={e=>setContribution(prev=>({...prev,[g.id]:e.target.value}))}/><button type="submit">Update</button></form></div>}):<p className="budget-empty">Start a goal for your emergency fund, holiday or big purchase.</p>}
+        {data.savingsGoals.length?data.savingsGoals.map(g=>{const pct=Math.min(100,Math.round(g.saved/g.target*100));return <div className="budget-goal" key={g.id}><div className="budget-goal-heading"><strong>{g.name}</strong><button className="mini-btn" type="button" aria-label={'Delete '+g.name} onClick={()=>{requestConfirm({title:'Delete savings goal?',message:g.name,detail:'Your recorded savings progress for this goal will be removed.',confirmLabel:'Delete goal',tone:'danger'},()=>update(prev=>({...prev,savingsGoals:prev.savingsGoals.filter(x=>x.id!==g.id)})));}}><Icon name="trash"/></button></div><div className="budget-progress"><span>{money(g.saved)} of {money(g.target)}</span><strong>{pct}%</strong></div><div className="budget-meter"><span style={{width:pct+'%'}}/></div>{g.targetDate&&<small>Target date: {g.targetDate}</small>}<form className="budget-contribute" onSubmit={e=>{e.preventDefault();saveContribution(g);}}><input type="number" inputMode="decimal" min="0.01" step="0.01" aria-label={'Add savings towards '+g.name} placeholder="Amount saved £" value={contribution[g.id]||''} onChange={e=>setContribution(prev=>({...prev,[g.id]:e.target.value}))}/><button type="submit">Update</button></form></div>}):<p className="budget-empty">Start a goal for your emergency fund, holiday or big purchase.</p>}
         <p className="budget-note">Savings goals track progress only; no money is transferred.</p></section>
     </div>
     <section className="card panel"><div className="panel-heading"><div><h2>Your purchases</h2><p>Manually logged or confirmed from a receipt photo</p></div><Icon name="receipt"/></div>
