@@ -1,0 +1,22 @@
+
+/* Billora email signup and password recovery: early test release only. */
+.billora-beta-notice{display:flex;align-items:flex-start;gap:9px;padding:12px 13px;border-left:3px solid #82d9a8;background:#1a382c;color:#bfdfce;font-size:11px;line-height:1.6;margin-bottom:17px;border-radius:7px}
+.billora-beta-notice svg{color:#a8f5c9;flex-shrink:0;margin-top:2px}
+.billora-email-intro{font-size:12px;color:#9fb8b1;line-height:1.5;margin:0 0 18px}
+.billora-auth-finance-visual{display:grid;gap:10px;margin:auto 0;background:#1a3232;border:1px solid #48705c;border-radius:14px;padding:23px;color:#e7f8ed}
+.billora-auth-finance-visual small{letter-spacing:1.2px;color:#a4ddba;font-size:10px;font-weight:800}
+.billora-auth-finance-visual>div{display:flex;justify-content:space-between;align-items:center;gap:12px;padding-bottom:12px;border-bottom:1px solid #3e5c4e}
+.billora-auth-finance-visual>div>span{font-size:12px;color:#bed4c9}
+.billora-auth-finance-visual>div>strong{font-size:21px;color:#f0fffa;font-variant-numeric:tabular-nums}
+.billora-reset-backdrop{z-index:2900}
+.billora-reset-dialog{display:grid;gap:16px;width:min(100%,470px);padding:32px;border:1px solid #3e5e56;border-radius:17px;background:#14252c;color:#f0f9f5;max-height:calc(100dvh - 24px);overflow:auto}
+.billora-reset-dialog h2{font-size:26px;letter-spacing:-.8px;line-height:1.2;margin:0}
+.billora-reset-dialog>p{font-size:13px;color:#afc9bd;line-height:1.6;margin:0}
+.billora-reset-kicker{display:flex;align-items:center;gap:7px;color:#9adeb7;font-size:10px;font-weight:800;letter-spacing:1.2px}
+.billora-reset-dialog .auth-form>label{font-size:12px}
+.billora-reset-dialog .auth-form input:not([type=checkbox]){background:#0d1d24;border:1px solid #45685d;color:#edf9f4}
+.billora-reset-toggle{display:flex!important;align-items:center;gap:9px;cursor:pointer}
+.billora-reset-toggle input{width:auto;min-height:0;accent-color:#92eac2}
+.billora-reset-return{border:1px solid #48615b;background:#223c38;color:#e6f5ec;border-radius:10px;padding:12px;font-weight:750}
+.billora-reset-dialog small{color:#99b5ab}
+@media(max-width:680px){.billora-reset-dialog{padding:26px 20px}.billora-auth-finance-visual{display:none}}

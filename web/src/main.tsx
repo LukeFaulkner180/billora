@@ -14,3 +14,5 @@ import './budget.css';
 import './premium-gate.css';
 import './finance-landing.css';
 import './interaction-polish.css';
+
+import './account-beta.css';

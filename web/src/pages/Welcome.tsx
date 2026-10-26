@@ -73,7 +73,7 @@ export function Welcome({onDemo,onSignIn,onSignUp,onAccountInfo}:Props) {
             <button className="fin-button fin-button-primary" type="button" onClick={onDemo}>Explore the live demo <Icon name="arrow" size={18}/></button>
             <a className="fin-button fin-button-outline" href="#features">See what Billora does</a>
           </div>
-          <p className="fin-launch-note"><Icon name="info" size={16}/> Public preview. The examples are fictional; accounts and paid checkout aren't live yet.</p>
+          <p className="fin-launch-note"><Icon name="info" size={16}/> Public preview with fictional examples. Email accounts are in testing and paid checkout is not live.</p>
         </div>
         <FinancePreview/>
       </section>
@@ -173,7 +173,7 @@ export function Welcome({onDemo,onSignIn,onSignUp,onAccountInfo}:Props) {
             <details><summary>Do I need to link my bank account?</summary><p>No. You enter your income, bills, debts and purchases manually. Billora doesn't connect to a bank.</p></details>
             <details><summary>Can I try Billora without signing up?</summary><p>Yes. The interactive demo uses fictional figures so you can explore the experience without an account.</p></details>
             <details><summary>How does receipt scanning work?</summary><p>Premium receipt scanning reads an image on your device and suggests the total. You review the details before saving a purchase. It can make mistakes, so always check the amount.</p></details>
-            <details><summary>Is Billora ready for real financial information?</summary><p>Not yet. This is a public preview. Secure account activation, payment processing and final privacy controls are still being completed.</p></details>
+            <details><summary>Is Billora ready for real financial information?</summary><p>Not yet. This is a public preview. Email accounts are in testing; payment processing and final privacy controls are still being completed.</p></details>
           </div>
         </div>
       </section>

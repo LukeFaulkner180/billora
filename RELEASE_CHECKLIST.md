@@ -8,11 +8,13 @@
 - [x] React + TypeScript + Vite, compiled by GitHub Actions into GitHub Pages.
 - [x] Distinct midnight/graphite/mint brand colours throughout website, dashboard and account screens.
 - [x] Demo remains clearly identified as sample data, with local-only storage.
-- [ ] Dedicated Billora Supabase project and separate authentication configured (must not reuse DayRidge).
-- [ ] Provision finance_snapshots SQL and verify RLS with two different user accounts (both API access and database ownership).
-- [ ] Set verified `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` in Billora GitHub Actions Variables. Never expose OAuth provider secrets or service_role keys to the frontend.
+- [x] Dedicated Billora Supabase project and publishable client configured separately from DayRidge.
+- [x] Provision finance_snapshots and verify RLS policies are present. Two-account end-to-end RLS testing remains outstanding.
+- [x] Connect dedicated Billora project using its browser-safe publishable key with optional GitHub variables as overrides. Never expose provider secrets or service_role keys to the frontend.
 - [ ] Connect Google OAuth and Microsoft Entra including personal Microsoft accounts, verified-email claims, authorised redirect URLs and consent screen configuration.
-- [ ] Complete email delivery, email confirmations, reset-password page/flow, OAuth callback tests, provider failure states and sign-out validation.
+- [x] Add email/password sign-in, registration and branded password reset UI.
+- [ ] Configure Supabase Auth production redirect URLs, test real email delivery and confirmation/reset end to end; configure custom SMTP for wider release.
+- [ ] Google/Microsoft OAuth provider setup and verification (postponed).
 - [ ] Implement a real account deletion flow with associated finance data erasure.
 - [ ] Publish privacy notice and terms, with accurate controller name and business contact details, retention, backups and GDPR rights.
 - [ ] Verify rate limiting, audit logging, dependency scans, backup/restore and incident response.
