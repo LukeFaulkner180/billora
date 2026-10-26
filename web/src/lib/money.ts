@@ -6,8 +6,8 @@ export const frequencies: Record<Frequency, string> = {
 };
 export const categories = ['Home', 'Utilities', 'Subscriptions', 'Insurance', 'Transport', 'Other'] as const;
 export const categoryColours: Record<(typeof categories)[number], string> = {
-  Home: '#6157f5', Utilities: '#46bea6', Subscriptions: '#f2a45d',
-  Insurance: '#70a5f1', Transport: '#cf8edf', Other: '#a6b0c2',
+  Home: '#77efbd', Utilities: '#54bed3', Subscriptions: '#f1b969',
+  Insurance: '#6c9eff', Transport: '#e39bba', Other: '#859da9',
 };
 export const round = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
 export const pounds = (n: number) => new Intl.NumberFormat('en-GB', {style: 'currency', currency: 'GBP'}).format(n);

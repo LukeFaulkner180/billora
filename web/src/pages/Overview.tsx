@@ -16,7 +16,7 @@ export function Overview({data, add, navigate, openSignup, signedIn}: {data: Fin
   const projection = planDebts(data.debts, data.settings.extraPayment, data.settings.strategy);
   const billTypes = Object.entries(categoryColours).map(([name, colour]) => ({name, colour, amount: total(data.bills.filter(b => b.category === name).map(b => monthly(b.amount, b.frequency)))})).filter(c => c.amount > 0);
   let degrees = 0;
-  const donut = bills ? `conic-gradient(${billTypes.map(c => {const from = degrees; degrees += c.amount / bills * 360; return `${c.colour} ${from}deg ${degrees}deg`;}).join(',')})` : 'conic-gradient(#e8eaf3 0deg 360deg)';
+  const donut = bills ? `conic-gradient(${billTypes.map(c => {const from = degrees; degrees += c.amount / bills * 360; return `${c.colour} ${from}deg ${degrees}deg`;}).join(',')})` : 'conic-gradient(#2a3c46 0deg 360deg)';
   const upcoming = [...data.bills].sort((a,b) => a.nextDue.localeCompare(b.nextDue)).slice(0,5);
   const month = new Date().toLocaleDateString('en-GB', {month: 'long', year:'numeric'});
   return <>

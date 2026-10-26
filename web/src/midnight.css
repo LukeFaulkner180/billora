@@ -1,0 +1,385 @@
+/* Billora Midnight — consumer-first dark visual identity.
+   Loaded LAST to replace the earlier light/violet UI without changing app logic.
+   Graphite surfaces, electric mint actions, cool ice-blue secondary highlights.
+   Check focus visibility and prefers-reduced-motion before editing effects. */
+:root {
+  color-scheme: dark;
+  --ink: #f3f8fa;
+  --muted: #98a9b7;
+  --sub: #b6c4cf;
+  --line: #283641;
+  --surface: #131d25;
+  --bg: #080e14;
+  --primary: #78efbd;
+  --primary-dark: #4bd4a1;
+  --primary-light: #173a30;
+  --success: #81efbd;
+  --success-light: #15362c;
+  --warning: #f5ca79;
+  --warning-light: #3a2d1f;
+  --danger: #ff939c;
+  --danger-light: #3a222b;
+  --radius: 21px;
+  --shadow: 0 15px 45px rgba(0,0,0,.19);
+}
+html { background: #080e14; }
+body {
+  color: var(--ink);
+  background: radial-gradient(ellipse 43% 40% at 98% -9%,rgba(54,151,139,.10),transparent 79%),#080e14;
+}
+::selection { color: #06130f; background: #80edbd; }
+a, button, input, select { -webkit-tap-highlight-color: transparent; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 2px solid #8bf7cb;
+  outline-offset: 3px;
+}
+input, select, textarea { color-scheme: dark; }
+input::placeholder, textarea::placeholder { color:#768b9c; opacity:1; }
+
+/* Frame + brand */
+.app-shell { background: #080e14; }
+.main {
+  background: radial-gradient(circle at 99% 1%,rgba(40,140,129,.11),transparent 36%),#080e14;
+}
+.sidebar {
+  background: linear-gradient(176deg,#0d151b 0%,#0a1117 56%,#0b171a 100%);
+  border-right:1px solid #26343d;
+  color:#dbe6ea;
+}
+.sidebar::before {
+  background:radial-gradient(circle,rgba(65,238,169,.12),transparent 69%);
+  left:-215px;top:-190px;
+}
+.sidebar .brand { color:#f7fbfc; letter-spacing:-1.5px; }
+.sidebar .brand-icon {
+  background:linear-gradient(145deg,#a4ffd8 0%,#52d49f 70%,#1ca67f 100%);
+  box-shadow:0 8px 29px rgba(91,238,175,.16);
+  color:#071714;
+}
+.sidebar .brand-icon svg { color:#071714; }
+.brand-dot { color:#79efbb; }
+.sidebar-caption { color:#82969f; }
+.nav-intro { color:#6f858f; }
+.nav-item { color:#9aafba; border:1px solid transparent; }
+.nav-item:hover { color:#e8f8f1; background:#1d2c31; }
+.nav-item.is-active {
+  background:linear-gradient(100deg,#1c4335,#132820);
+  border:1px solid #3a785d;
+  box-shadow:inset 3px 0 0 #84f1bf,0 6px 20px #0003;
+  color:#c2ffe1;
+}
+.help-card {
+  background:linear-gradient(146deg,#17382e,#102723 72%,#102026);
+  border:1px solid #2a5d47;
+  box-shadow:0 16px 30px rgba(0,0,0,.2);
+  color:#f0fbf6;
+}
+.help-card p { color:#acc9bc; }
+.help-sparkle { color:#90f6bc; }
+.help-progress { background:#335345; }
+.help-progress>span { background:linear-gradient(90deg,#52cfab,#b4f5b1); }
+.sidebar-avatar { background:#234537;color:#b7ffdd; }
+.sidebar-account {color:#e5f7eb;}
+.sidebar-account small,.privacy-foot {color:#849e9b;}
+.topbar {
+  background:rgba(11,19,25,.86);
+  border-bottom:1px solid #26353e;
+  box-shadow:0 7px 30px rgba(0,0,0,.12);
+  backdrop-filter:blur(22px);
+  -webkit-backdrop-filter:blur(22px);
+}
+.breadcrumb {color:#8298a5;}
+.breadcrumb strong {color:#e9f3f6;}
+.crumb-arrow {color:#536975;}
+.demo-pill {background:#17352e;color:#b8ead1;border:1px solid #2b5845;}
+.demo-pill span {background:#78efbd;box-shadow:0 0 0 3px #78efbd1f;}
+.sync-badge {background:#15362b;color:#99ebbf;}
+.account-trigger {
+  background:#152229;
+  border:1px solid #35484b;
+  box-shadow:none;
+  color:#e9f4f1;
+}
+.account-trigger:hover {background:#20372f;border-color:#59b48a;}
+.account-trigger .user-avatar {background:#295141;color:#c3ffe1;}
+.account-trigger-text {color:#eff8f5;}
+.header-create {
+  background:linear-gradient(117deg,#87f9c7,#56dcaa);
+  color:#062018;
+  border-color:#79ecc0;
+  box-shadow:0 8px 25px #40c38f28;
+}
+.header-create:hover {background:#a4ffd6;}
+.mobile-brand {color:#f5fafa;}
+.mobile-logo {color:#78efbd;}
+
+/* Headings, buttons, cards */
+.page-eyebrow {color:#7ce9bd;}
+.page-heading h1 {color:#f5f9fa;letter-spacing:-1.15px;}
+.page-heading p,.panel-heading p {color:#99aab5;}
+.page-heading .actions .btn {min-height:44px;}
+.btn {box-shadow:none;}
+.btn-primary {
+  background:linear-gradient(112deg,#81f5c1,#51d8a1);
+  border:1px solid #87eac0;
+  color:#061a14;
+  box-shadow:0 8px 23px #36c88d20;
+}
+.btn-primary:hover {background:#9bfbd1;box-shadow:0 11px 28px #46d39c35;}
+.btn-secondary {
+  background:#1a2831;
+  border:1px solid #384a54;
+  color:#e4eef1;
+}
+.btn-secondary:hover {background:#25363d;border-color:#649e8b;}
+.btn-quiet {color:#b5f7d9;background:#183c30;}
+.btn-danger {color:#ffb0b8;background:#412730;}
+.text-link {color:#91f5c9;}
+.text-link:hover {color:#c1ffe3;}
+.card,.stat-card,.panel,.debt-card {
+  background:linear-gradient(155deg,rgba(23,36,46,.98),rgba(16,26,34,.99))!important;
+  border:1px solid #2b3c46!important;
+  box-shadow:0 12px 38px rgba(0,0,0,.16);
+  color:#edf6f8;
+}
+.panel {position:relative;}
+.panel-heading h2 {color:#f3f8fa;}
+.panel-heading>svg {color:#78e5bc;}
+.stat-card {transition:transform .23s ease,border-color .23s ease,box-shadow .23s ease;}
+.stat-card:hover {border-color:#406a5c!important;box-shadow:0 19px 44px rgba(0,0,0,.23);transform:translateY(-2px);}
+.stat-card::after {background:radial-gradient(circle,#42c69016,transparent 70%);}
+.stat-top {color:#a7bac3;}
+.stat-number {color:#f6fbfc;font-variant-numeric:tabular-nums;}
+.stat-caption {color:#8fa3af;}
+.stat-icon,.stat-icon.green {background:#203c32;color:#84f1c4;}
+.stat-icon.orange {background:#45351e;color:#f2c37a;}
+.stat-icon.red {background:#3b2833;color:#ffa1a3;}
+.stat-card.green .stat-number {color:#a4f9cb;}
+.stat-card.red .stat-number {color:#ffb3b7;}
+.stat-card.orange .stat-icon {color:#f7c87a;}
+
+/* Signature hero: subtle mesh-like pattern rather than purple gradient */
+.money-hero {
+  background:
+    radial-gradient(ellipse 55% 83% at 91% 7%,rgba(92,222,170,.22),transparent 73%),
+    radial-gradient(ellipse 35% 100% at 2% 110%,rgba(43,102,127,.17),transparent 75%),
+    linear-gradient(123deg,#111c24,#172d2b 60%,#102321);
+  border:1px solid #345748;
+  box-shadow:0 23px 65px rgba(0,0,0,.27),inset 0 1px 0 rgba(173,255,213,.08);
+  color:#f1fbf6;
+}
+.money-hero::before {
+  z-index:0;
+  background-image:linear-gradient(rgba(142,247,207,.028) 1px,transparent 1px),linear-gradient(90deg,rgba(142,247,207,.028) 1px,transparent 1px);
+  background-size:32px 32px;
+  mask-image:linear-gradient(115deg,transparent 0%,#000 60%,#000 100%);
+}
+.money-hero-orb {border-color:#a1fbd81e;}
+.hero-kicker {color:#a4dec5;}
+.hero-kicker-dot {background:#84ffbc;box-shadow:0 0 17px #52e5aeaa;}
+.money-hero h2 {color:#f9fffa;}
+.money-hero h2 em {color:#9dffd1;}
+.money-hero-copy>p {color:#bdd5ce;}
+.hero-action-main {background:#a3ffd3;color:#062017;box-shadow:0 8px 24px #07180e45;}
+.hero-action-main:hover {background:#caffea;}
+.hero-action-quiet {color:#c0e7d5;}
+.hero-action-quiet:hover {color:#fff;}
+.hero-visual {
+  background:linear-gradient(145deg,rgba(19,55,47,.93),rgba(13,36,38,.96));
+  border:1px solid #427363;
+  box-shadow:0 22px 45px #05100b66,inset 0 1px 0 #a2ffcf16;
+}
+.hero-visual-head {color:#b0d4c5;}
+.hero-visual-head>span:last-child,.hero-visual-foot strong {color:#9dffd1;}
+.hero-visual-balance small {color:#a8c7bc;}
+.hero-visual-balance strong {color:#fff;}
+.hero-visual-foot {border-color:#4d736555;color:#aad6c3;}
+.hero-visual-foot i {background:#92fbc4;}
+
+/* Financial visuals, activity, status indicators */
+.donut {filter:drop-shadow(0 11px 18px #0005);}
+.donut::after {background:#14212a;}
+.donut-middle {background:#14212a;}
+.donut-middle span,.donut-middle small {color:#93a9b4;}
+.donut-middle strong {color:#effbf6;}
+.legend-row {color:#a7b9c4;}
+.legend-row strong {color:#edf6f5;}
+.compact-row,.bill-row,.react-bill {border-color:#2b3a46;}
+.compact-row:hover {background:#20332f;}
+.compact-row small,.bill-details p,.bill-details span {color:#9aabb6;}
+.bill-emblem,.compact-row .bill-emblem {background:#1e3a34;color:#87ebbf;}
+.bill-right small {color:#9eb0ba;}
+.progress-track {background:#2d414a;}
+.progress-track>div,.progress-track>span {background:linear-gradient(90deg,#3fbca7,#8cf8be);}
+.debt-highlight {
+  background:radial-gradient(circle at 95% 10%,rgba(127,249,192,.16),transparent 40%),linear-gradient(120deg,#132b2b,#1a3b36 85%);
+  border:1px solid #376756;
+  color:#eefbf4;
+  box-shadow:0 12px 35px #030c0c2e;
+}
+.debt-highlight::before,.debt-highlight::after {border-color:#a5ffda23;}
+.highlight-kicker,.highlight-sub,.highlight-bottom {color:#b5d4c5;}
+.highlight-bottom strong,.highlight-value {color:#effff6;}
+.debt-badge,.order-number {background:#203e35;color:#8cf2c2;}
+.debt-card:hover {box-shadow:0 16px 40px rgba(0,0,0,.3);border-color:#466854!important;}
+.debt-meta,.split-details,.order-item {border-color:#2b3b45;}
+.debt-meta span,.debt-sub,.debt-progress-row,.split-details small,.order-item small {color:#93a9b5;}
+.big-number {color:#f4fbfa;}
+.big-number span {color:#9caebb;}
+.tip-item {border-left-color:#4cbf9a;}
+.tip-item span {color:#a8b9c5;}
+.status.upcoming {background:#253340;color:#b3c7d2;}
+.status.soon {background:#3b3021;color:#f4c67c;}
+.status.overdue {background:#422831;color:#ff9eaa;}
+.status.today {background:#1f3e3b;color:#a5f8d5;}
+.status.paid {background:#1c3a2c;color:#8ae6ac;}
+.newbie-banner,.info-note {
+  background:linear-gradient(111deg,#17302c,#152832);
+  border:1px solid #325b50;
+  color:#b5d0c9;
+}
+.newbie-banner svg,.info-note svg {color:#91ecc5;}
+.newbie-banner button {background:#213c33;color:#b8ffdf;border-color:#487866;}
+.newbie-banner button:hover {background:#2e5544;}
+.alert-line,.warning-box {background:#362d21;color:#f1cb92;border:1px solid #655039;}
+.alert-line strong {color:#ffe2b1;}
+.footer-line {color:#758e99;}
+
+/* Forms, data tables and repayment tools */
+.bill-search,.text-input,.form-field input,.form-field select,.auth-form input {
+  background:#0e1920;
+  border:1px solid #3a5059;
+  color:#ecf5f3;
+  box-shadow:inset 0 1px 4px #0002;
+}
+.bill-search:focus,.text-input:focus,.form-field input:focus,.form-field select:focus,.auth-form input:focus {
+  border-color:#7cecb9;
+  box-shadow:0 0 0 3px rgba(105,233,183,.16);
+  outline:none;
+}
+.form-field label,.auth-form>label {color:#c0d0d6;}
+.form-field small,.form-hint,.settings-note {color:#93a9b4;}
+.form-hint {background:#21313a;}
+.data-table {background:transparent;}
+.data-table td,.data-table th {border-color:#2c3d46;color:#d0dee3;}
+.data-table th {color:#a6b8c1;}
+.data-table tr:hover td {background:#1c3131;}
+.mini-btn,.modal-close,.icon-btn {
+  border:1px solid #364750;
+  background:#203039;
+  color:#c2d2d9;
+}
+.mini-btn:hover,.modal-close:hover,.icon-btn:hover {background:#2a4742;border-color:#5eaf8d;color:#d8ffec;}
+.mini-btn.pay {background:#1d4334;color:#99f4c7;border-color:#326d53;}
+.strategy-btn,.compare-method {
+  background:#17252e;
+  border:1px solid #31434d;
+  color:#ebf2f4;
+}
+.strategy-btn small,.compare-method small {color:#a7bac5;}
+.strategy-btn:hover {border-color:#668c7c;background:#20362f;}
+.strategy-btn.is-selected {border:1px solid #74e2b1;background:#1c3a30;color:#b2ffd9;box-shadow:0 0 0 1px #74e2b118;}
+.strategy-btn.is-selected small {color:#b5d1c4;}
+.planner-input .setting-amount,.control-label b {color:#9cf6cb;}
+.projection-summary .mini,.compare-method {background:#17262f;}
+.compare-method>span {color:#9cf3c9;}
+.order-item,.setting-row {border-color:#30404b;}
+.order-number {background:#234236;color:#9cf2c5;}
+.chart-label,.graph-labels,.range-ends {color:#9db0bb;fill:#a8bec5;}
+input[type=range] {accent-color:#78efbd;}
+.settings-separator {background:#2b3a46;}
+
+/* Finance edit dialogs and account creation (dark even on phones) */
+.modal-backdrop,.auth-backdrop {background:rgba(2,8,12,.83);backdrop-filter:blur(13px);}
+.modal,.signed-dialog,.auth-dialog {
+  background:#132029;
+  border:1px solid #39505a;
+  box-shadow:0 34px 100px #000b;
+  color:#edf8f8;
+}
+.modal-header {border-color:#30444e;}
+.modal-header h2,.auth-body h2,.signed-dialog h2 {color:#f5fbfb;}
+.modal-header p {color:#9aaeba;}
+.auth-showcase {
+  background:radial-gradient(circle at 75% 29%,#2b805f5c,transparent 44%),linear-gradient(148deg,#0f2b2a,#123f35 70%,#0a201f);
+  border-right:1px solid #315447;
+}
+.auth-logo-mark {background:#6be3ad;color:#092015;}
+.auth-glow {background:#6de4aa28;box-shadow:0 0 0 30px #a8fbd109,0 0 0 70px #b3ffdf05;}
+.auth-illustration-card {background:linear-gradient(145deg,#88e7b31f,#123d3b88);border-color:#70d5ab77;box-shadow:0 18px 38px #0005;}
+.auth-illustration-card small {color:#b8e1d1;}
+.auth-bars i {background:#66e0ae77;}
+.auth-bars i:last-child {background:#9ff9c9;}
+.floating-chip {background:#ddffec;color:#174035;box-shadow:0 12px 24px #0004;}
+.auth-showcase>div:last-child p {color:#b6d8c9;}
+.auth-body {background:#132029;}
+.auth-eyebrow {color:#87edbf;}
+.auth-subtitle,.auth-switch,.auth-demo p,.signed-dialog p {color:#a4b5bf;}
+.auth-close {background:#23343d;color:#b4ccd0;}
+.auth-close:hover {background:#2f4c44;color:#abffcf;}
+.auth-notice {background:#352d20;color:#e9d0a0;border:1px solid #655134;}
+.auth-notice span {color:#d7bb90;}
+.social-login {background:#192a32;border:1px solid #39525a;color:#e9f6f7;}
+.social-login:hover:not(:disabled) {background:#253d39;border-color:#65b99b;}
+.social-arrow {color:#8fe3be;}
+.auth-divider {color:#8fa6b1;}
+.auth-divider::before,.auth-divider::after {background:#324750;}
+.auth-form>label {color:#c6d7dc;}
+.show-password,.auth-forgot,.auth-switch button {color:#9df3c9;}
+.auth-submit {
+  background:linear-gradient(110deg,#9affcc,#59dca4);
+  color:#061e17;
+  box-shadow:0 12px 23px #62dbae23;
+}
+.auth-submit:hover:not(:disabled) {box-shadow:0 15px 30px #45dd9b32;}
+.auth-feedback,.signed-state {background:#193a34;border:1px solid #356958;color:#c1ebd8;}
+.auth-demo {border-color:#31444a;}
+.auth-demo button {color:#a1f4d1;}
+.signed-badge,.cloud-state-icon {background:#204338;color:#97f9c9;}
+.cloud-state {background:#15222b;border:1px solid #354854;color:#edf6f7;}
+.cloud-state p {color:#a4b6c0;}
+
+/* Mobile: spacious tap targets, uncluttered charcoal bottom bar */
+.mobile-account-prompt {
+  background:linear-gradient(112deg,#1a302f,#12212b);
+  border:1px solid #36574b;
+  box-shadow:0 10px 22px #0002;
+}
+.mobile-account-prompt .prompt-icon {background:#224738;color:#8cf6c3;}
+.mobile-account-prompt strong {color:#e9f8f0;}
+.mobile-account-prompt p {color:#a0b7b5;}
+.mobile-account-prompt button {background:#214338;color:#b5fddd;border:1px solid #477664;}
+.mobile-account-prompt button:hover {background:#2b5945;border-color:#6adc9e;}
+.mobile-nav {
+  background:rgba(17,28,35,.95);
+  border:1px solid #34454e;
+  box-shadow:0 16px 50px #0009;
+  backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px);
+}
+.mobile-nav button {color:#8ea5b0;background:transparent;}
+.mobile-nav button:hover {background:#223b33;color:#bafadc;}
+.mobile-nav button.is-active {
+  color:#9af4c9;
+  background:#204234;
+  box-shadow:inset 0 0 0 1px #497e62;
+}
+@media (max-width:900px) {
+  .topbar {background:rgba(11,19,25,.94);box-shadow:0 6px 25px #0005;}
+  .mobile-nav {border-color:#344c50;}
+}
+@media (max-width:650px) {
+  .topbar {border-bottom:1px solid #304047;}
+  .account-trigger {background:#1b3630;border:1px solid #426b57;color:#b1f3d1;}
+  .account-trigger:hover {background:#284638;border-color:#69c99c;}
+  .account-trigger .account-trigger-text {color:#bbfddd;}
+  .hero-visual {box-shadow:0 16px 35px rgba(0,0,0,.3);}
+  .stat-card {min-height:125px;}
+  .money-hero {box-shadow:0 18px 40px #0006;}
+  .auth-dialog {border-color:#3a4b52;}
+  .auth-body {background:#132029;}
+  .mobile-nav {bottom:max(10px,env(safe-area-inset-bottom));}
+}
+@media(prefers-reduced-motion:reduce) {
+  .stat-card,.nav-item {transition:none!important;}
+}
