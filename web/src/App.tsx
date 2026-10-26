@@ -36,6 +36,7 @@ const accountViewFromUrl = ():AccountView|null => {
 export default function App() {
   const [page,setPage]=useState<Page>(pageFromHash);
   const [showDemo,setShowDemo]=useState(()=>new URLSearchParams(window.location.search).get('demo')==='1');
+  const [showWebsite,setShowWebsite]=useState(()=>new URLSearchParams(window.location.search).get('site')==='1');
   const [showReleaseInfo,setShowReleaseInfo]=useState(false);
   const [data,setData]=useState<FinanceData>(initialData);
   const [dataOwner,setDataOwner]=useState('local');
@@ -65,7 +66,7 @@ export default function App() {
   },[]);
   useEffect(()=>{if(!toast)return;const t=window.setTimeout(()=>setToast(''),4200);return()=>window.clearTimeout(t);},[toast]);
   useEffect(()=>{
-    const syncAccountUrl=()=>{const params=new URLSearchParams(window.location.search);const view=accountViewFromUrl();setShowAccount(Boolean(view));setShowDemo(params.get('demo')==='1');if(params.get('auth')==='reset')setPasswordRecovery(true);if(view)setAccountView(view);};
+    const syncAccountUrl=()=>{const params=new URLSearchParams(window.location.search);const view=accountViewFromUrl();setShowAccount(Boolean(view));setShowDemo(params.get('demo')==='1');setShowWebsite(params.get('site')==='1');if(params.get('auth')==='reset')setPasswordRecovery(true);if(view)setAccountView(view);};
     window.addEventListener('popstate',syncAccountUrl);
     return ()=>window.removeEventListener('popstate',syncAccountUrl);
   },[]);
@@ -189,14 +190,17 @@ export default function App() {
     window.history.replaceState(null,'',url.toString());
   };
   const openDemo=()=>{
-    setShowDemo(true);setShowAccount(false);
-    const url=new URL(window.location.href);url.searchParams.set('demo','1');url.searchParams.delete('auth');
+    setShowDemo(!user);setShowWebsite(false);setShowAccount(false);setPage('overview');
+    const url=new URL(window.location.href);
+    url.searchParams.delete('site');url.searchParams.delete('auth');
+    if(user)url.searchParams.delete('demo');else url.searchParams.set('demo','1');
+    url.hash='overview';
     window.history.pushState(null,'',url.toString());window.scrollTo({top:0,behavior:'smooth'});
   };
   const goHome=()=>{
-    if(user)return;
-    setShowDemo(false);setShowAccount(false);setPage('overview');
-    const url=new URL(window.location.href);url.searchParams.delete('demo');url.searchParams.delete('auth');url.hash='';
+    setShowWebsite(true);setShowDemo(false);setShowAccount(false);setPage('overview');
+    const url=new URL(window.location.href);
+    url.searchParams.set('site','1');url.searchParams.delete('demo');url.searchParams.delete('auth');url.hash='';
     window.history.pushState(null,'',url.toString());window.scrollTo({top:0,behavior:'smooth'});
   };
   const signOut=async()=>{if(!supabase)return;const {error}=await supabase.auth.signOut();if(error)notify(error.message);else{closeAccount();notify('Signed out.');}};
@@ -211,8 +215,8 @@ export default function App() {
   const accountModal = showAccount&&(user?<div className="auth-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)closeAccount();}}><section className="signed-dialog" role="dialog" aria-modal="true" aria-label="Your Billora account"><button className="auth-close" onClick={closeAccount} aria-label="Close"><Icon name="close"/></button><div className="signed-badge"><Icon name="shield"/></div><h2>Your own little money space.</h2><p>Signed in as <strong>{user.email}</strong></p><div className="signed-state">{syncStatus==='saved'?'✓ Your account data is synced':syncStatus==='saving'?'Saving your changes…':syncStatus==='error'?'Your changes could not be saved — please keep this page open.':'Loading your finance data…'}</div><button className="auth-submit" type="button" onClick={()=>void signOut()}>Sign out <span>↗</span></button></section></div>:<AccountDialog key={accountView} initialView={accountView} onClose={closeAccount} notice={notify}/>);
   if(authLoading) return <div className="welcome-loading" role="status"><Brand/><p>Preparing your money space…</p></div>;
   if(passwordRecovery) return <PasswordResetDialog ready={Boolean(user)} onFinished={finishPasswordReset}/>;
-  if(!user && !showDemo) return <>
-    <Welcome onDemo={openDemo} onSignIn={()=>openAccount('login')} onSignUp={()=>openAccount('signup')} onAccountInfo={()=>setShowReleaseInfo(true)}/>
+  if(showWebsite||(!user && !showDemo)) return <>
+    <Welcome signedIn={Boolean(user)} onDemo={openDemo} onSignIn={()=>openAccount('login')} onSignUp={()=>openAccount('signup')} onAccountInfo={()=>setShowReleaseInfo(true)}/>
     {accountModal}
     {showPremium&&<PremiumDialog onClose={()=>setShowPremium(false)} signedIn={Boolean(user)} onAccount={()=>openAccount('signup')}/>}
     {showReleaseInfo&&<div className="auth-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)setShowReleaseInfo(false);}}><section className="welcome-release-dialog" role="dialog" aria-modal="true" aria-labelledby="release-note-heading"><button className="auth-close" onClick={()=>setShowReleaseInfo(false)} aria-label="Close"><Icon name="close"/></button><h2 id="release-note-heading">Your privacy matters.</h2><p>This is an early public preview, not a fully launched financial service. The demo uses fictional examples and browser-only storage. Do not enter real private financial information here.</p><p>Email account testing is underway with a dedicated Billora database. Privacy terms and account deletion are not complete yet. Please use fictional information for now.</p><button className="welcome-demo-btn" onClick={()=>{setShowReleaseInfo(false);openDemo();}}>Explore the demo</button></section></div>}

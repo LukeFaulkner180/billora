@@ -3,6 +3,7 @@ import {Icon} from '../components/Icons';
 import {PREMIUM_MONTHLY_PENCE, PREMIUM_YEARLY_PENCE, premiumSavingsPence, premiumSavingsPercent, formatPremiumPrice} from '../lib/pricing';
 
 type Props = {
+  signedIn:boolean;
   onDemo:()=>void;
   onSignIn:()=>void;
   onSignUp:()=>void;
@@ -50,7 +51,7 @@ function SpendPreview() {
   </div>;
 }
 
-export function Welcome({onDemo,onSignIn,onSignUp,onAccountInfo}:Props) {
+export function Welcome({signedIn,onDemo,onSignIn,onSignUp,onAccountInfo}:Props) {
   return <div className="fin-home" id="top">
     <header className="fin-header">
       <a className="fin-logo" href="#top" aria-label="Billora home"><Brand/></a>
@@ -58,8 +59,8 @@ export function Welcome({onDemo,onSignIn,onSignUp,onAccountInfo}:Props) {
         <a href="#features">Features</a><a href="#together">For couples</a><a href="#views">App views</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a>
       </nav>
       <div className="fin-header-actions">
-        <button className="fin-text-button" type="button" onClick={onSignIn}>Sign in</button>
-        <button className="fin-header-cta" type="button" onClick={onDemo}>Try the demo <Icon name="arrow" size={16}/></button>
+        <button className="fin-text-button" type="button" onClick={onSignIn}>{signedIn?'My account':'Sign in'}</button>
+        <button className="fin-header-cta" type="button" onClick={onDemo}>{signedIn?'Open dashboard':'Try the demo'} <Icon name="arrow" size={16}/></button>
       </div>
     </header>
 
@@ -70,7 +71,7 @@ export function Welcome({onDemo,onSignIn,onSignUp,onAccountInfo}:Props) {
           <h1 id="fin-hero-heading">Your bills, spending and debt.<br/><span>All in one place.</span></h1>
           <p className="fin-lede">Know what's due, see where your money goes and make a plan to pay off what you owe. Billora keeps the numbers organised so you can focus on the decisions.</p>
           <div className="fin-hero-actions">
-            <button className="fin-button fin-button-primary" type="button" onClick={onDemo}>Explore the live demo <Icon name="arrow" size={18}/></button>
+            <button className="fin-button fin-button-primary" type="button" onClick={onDemo}>{signedIn?'Open my dashboard':'Explore the live demo'} <Icon name="arrow" size={18}/></button>
             <a className="fin-button fin-button-outline" href="#features">See what Billora does</a>
           </div>
           <a className="fin-together-teaser" href="#together"><Icon name="home" size={17}/><span><strong>New to Premium: Billora Together</strong><small>One joint household. Two private accounts.</small></span><Icon name="arrow" size={17}/></a>
@@ -166,7 +167,7 @@ export function Welcome({onDemo,onSignIn,onSignUp,onAccountInfo}:Props) {
                 <span><Icon name="check" size={16}/> Save toward common goals</span>
                 <span><Icon name="check" size={16}/> One Premium plan for up to two people</span>
               </div>
-              <a className="fin-button fin-button-primary" href="?demo=1#together">See the joint-account preview <Icon name="arrow" size={17}/></a>
+              <a className="fin-button fin-button-primary" href="?demo=1#together">{signedIn?'Open Billora Together':'See the joint-account preview'} <Icon name="arrow" size={17}/></a>
               <small className="fin-together-footnote">Feature preview is available now. Live sharing requires Premium; paid subscriptions are not enabled yet.</small>
             </div>
             <div className="fin-together-preview" aria-label="Fictional illustration of separate personal and shared household financial spaces">
@@ -187,7 +188,7 @@ export function Welcome({onDemo,onSignIn,onSignUp,onAccountInfo}:Props) {
         <div className="fin-section-heading">
           <span className="fin-eyebrow">EXPLORE THE APP</span>
           <h2 id="fin-views-heading">Take a look around, screen by screen.</h2>
-          <p>Jump directly into an interactive demo view. Everything uses fictional figures, so you can explore without signing up.</p>
+          <p>{signedIn?'Jump straight to each screen in your own account.':'Jump directly into an interactive demo view using fictional figures. No sign-up is needed.'}</p>
         </div>
         <div className="fin-views-grid">
           {[
@@ -203,12 +204,12 @@ export function Welcome({onDemo,onSignIn,onSignUp,onAccountInfo}:Props) {
             <Icon name="arrow" size={18}/>
           </a>)}
         </div>
-        <p className="fin-views-note"><Icon name="info" size={16}/> Demo data stays in your browser. Billora Together is a read-only Premium preview without a subscription.</p>
+        <p className="fin-views-note"><Icon name="info" size={16}/>{signedIn?'These links open your signed-in account. Together requires Premium; no payment will be taken.':'Demo data stays in your browser. Together is a read-only Premium preview without a subscription.'}</p>
       </section>
 
       <section className="fin-section fin-section-alt" id="how" aria-labelledby="fin-how-heading">
         <div className="fin-container fin-how-grid">
-          <div><span className="fin-eyebrow">HOW IT WORKS</span><h2 id="fin-how-heading">Start with what you know.</h2><p>You don't need to connect your bank. Enter your figures manually, see your dashboard take shape and adjust your plan as things change.</p><button className="fin-button fin-button-outline" type="button" onClick={onDemo}>Open the demo <Icon name="arrow" size={17}/></button></div>
+          <div><span className="fin-eyebrow">HOW IT WORKS</span><h2 id="fin-how-heading">Start with what you know.</h2><p>You don't need to connect your bank. Enter your figures manually, see your dashboard take shape and adjust your plan as things change.</p><button className="fin-button fin-button-outline" type="button" onClick={onDemo}>{signedIn?'Open my dashboard':'Open the demo'} <Icon name="arrow" size={17}/></button></div>
           <div className="fin-steps">
             <div><span>01</span><div><h3>Add income, bills and debts</h3><p>Include how often you're paid and when regular payments are due.</p></div></div>
             <div><span>02</span><div><h3>Record spending and savings</h3><p>View daily, weekly, monthly and yearly spending in one place.</p></div></div>
@@ -225,7 +226,7 @@ export function Welcome({onDemo,onSignIn,onSignUp,onAccountInfo}:Props) {
             <div className="fin-price"><strong>£0</strong><span>forever</span></div>
             <p>Everything you need to track the basics.</p>
             <ul><li>Bill and income tracking</li><li>Debt repayment planner</li><li>Manual spending history</li><li>Savings goals</li></ul>
-            <button className="fin-button fin-button-outline" type="button" onClick={onDemo}>Try free demo</button>
+            <button className="fin-button fin-button-outline" type="button" onClick={onDemo}>{signedIn?'Open my dashboard':'Try free demo'}</button>
           </article>
           <article className="fin-price-card fin-price-premium">
             <span className="fin-price-title">Premium monthly</span>
@@ -258,7 +259,7 @@ export function Welcome({onDemo,onSignIn,onSignUp,onAccountInfo}:Props) {
 
       <section className="fin-end fin-container">
         <div><span className="fin-eyebrow">TAKE A LOOK INSIDE</span><h2>See how your money could look in Billora.</h2><p>Explore the dashboard, add sample bills, try the debt planner and preview Billora Together before registering.</p></div>
-        <div className="fin-end-actions"><button type="button" className="fin-button fin-button-primary" onClick={onDemo}>Try the interactive demo <Icon name="arrow" size={18}/></button><button type="button" className="fin-account-link" onClick={onSignUp}>View the account preview</button></div>
+        <div className="fin-end-actions"><button type="button" className="fin-button fin-button-primary" onClick={onDemo}>{signedIn?'Open my dashboard':'Try the interactive demo'} <Icon name="arrow" size={18}/></button><button type="button" className="fin-account-link" onClick={signedIn?onSignIn:onSignUp}>{signedIn?'Manage account':'Create a free account'}</button></div>
       </section>
     </main>
     <footer className="fin-footer"><div className="fin-container fin-footer-inner"><a href="#top" aria-label="Billora home"><Brand compact/></a><p>Billora helps you organise money. It isn't a bank and doesn't provide regulated financial advice.</p><button type="button" onClick={onAccountInfo}>Privacy & release status</button><span>© {new Date().getFullYear()} Billora · Public preview</span></div></footer>
