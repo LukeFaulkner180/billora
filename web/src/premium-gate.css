@@ -48,3 +48,8 @@
 .premium-plan-grid .premium-yearly{grid-column:1/-1}
 .premium-plan-grid strong em{font-size:13px;font-weight:500;font-style:normal;color:#c1decf}
 @media(max-width:650px){.premium-plan-grid{grid-template-columns:1fr}.premium-plan-grid .premium-yearly{grid-column:auto}}
+
+/* Demonstration-only access to receipt scanning. Does not grant subscription privileges. */
+.budget-demo-scanner-note{display:flex;align-items:flex-start;gap:11px;background:#142b27;border-left:3px solid #7bdbad;border-radius:5px;padding:13px 16px;color:#b9d7cb;font-size:12px;line-height:1.6;margin:0}
+.budget-demo-scanner-note svg{flex-shrink:0;color:#8ee6b9;margin-top:2px}
+.budget-demo-scanner-note strong{color:#e0fae9}

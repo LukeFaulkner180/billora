@@ -3,9 +3,11 @@ import type {FinanceData,SpendingCategory,SpendingEntry,SpendingPeriod,SavingsGo
 import {Icon} from '../components/Icons';
 import {PageHeading} from '../components/Ui';
 import {dateLocal,money,parseReceipt,periodBounds,periodSpending,spendingCategories} from '../lib/spending';
-type Props={data:FinanceData;update:(fn:(prev:FinanceData)=>FinanceData)=>void;notify:(message:string)=>void;premium:boolean;onUpgrade:()=>void};
+type Props={data:FinanceData;update:(fn:(prev:FinanceData)=>FinanceData)=>void;notify:(message:string)=>void;premium:boolean;demoPreview:boolean;onUpgrade:()=>void};
 const safeAmount=(v:string)=>{const n=Number(v);return Number.isFinite(n)?Math.min(1e8,Math.max(0,Math.round(n*100)/100)):0;};
-export function Budget({data,update,notify,premium,onUpgrade}:Props){
+export function Budget({data,update,notify,premium,demoPreview,onUpgrade}:Props){
+  // Public demo may exercise local OCR, but verified cloud accounts still require Premium.
+  const canScanReceipt = premium || demoPreview;
   const [period,setPeriod]=useState<SpendingPeriod>('weekly');
   const [weeklyDraft,setWeeklyDraft]=useState(String(data.settings.weeklyBudget||''));
   const [showExpense,setShowExpense]=useState(false);
@@ -47,7 +49,7 @@ export function Budget({data,update,notify,premium,onUpgrade}:Props){
     setContribution(x=>({...x,[goal.id]:''}));notify('Goal updated. No money has been moved.');
   }
   async function scan(file?:File){if(!file)return;
-    if(!premium){onUpgrade();return;}
+    if(!canScanReceipt){onUpgrade();return;}
     if(!file.type.startsWith('image/')||file.size>12_000_000){setScanMessage('Choose a receipt photo under 12MB.');return;}
     setScanning(true);setScanMessage('Reading on your phone or computer. The first scan downloads OCR data.');
     try{const {createWorker}=await import('tesseract.js');const worker=await createWorker('eng');let text='';
@@ -60,9 +62,10 @@ export function Budget({data,update,notify,premium,onUpgrade}:Props){
   }
   return <div className="budget-page">
     <PageHeading eyebrow="Everyday money" title="Budget & spending" description="See where your money goes, set flexible spending limits and make progress on your goals."/>
-    <div className="premium-intro"><div><strong>{premium?'Premium budgeting enabled':'Meet Billora Premium'}</strong><p>{premium?'Plan each category and scan receipts into your personal spending.':'Upgrade to unlock weekly limits, category budgets and receipt photo scanning.'}</p></div>{!premium&&<button type="button" onClick={onUpgrade}>Explore Premium</button>}</div>
+    <div className="premium-intro"><div><strong>{premium?'Premium budgeting enabled':demoPreview?'Try receipt scanning in the demo':'Meet Billora Premium'}</strong><p>{premium?'Plan each category and scan receipts into your personal spending.':demoPreview?'Scan a receipt for free while exploring. Weekly budgets and category limits remain Premium features.':'Upgrade to unlock weekly limits, category budgets and receipt photo scanning.'}</p></div>{!premium&&<button type="button" onClick={onUpgrade}>Explore Premium</button>}</div>
+    {demoPreview&&<p className="budget-demo-scanner-note" role="note"><Icon name="shield" size={17}/> <span><strong>Demo scanner unlocked.</strong> Receipt images are processed on your device and are not saved. Confirmed purchase details stay in this browser, not in a Billora account. Avoid receipts containing sensitive personal details.</span></p>}
     <div className="budget-tools"><button type="button" className="btn btn-primary" onClick={()=>{reset();setShowExpense(true);}}><Icon name="plus"/> Add spending</button>
-      <button type="button" className="btn btn-secondary" disabled={scanning} onClick={()=>premium?fileRef.current?.click():onUpgrade()}><Icon name="receipt"/>{scanning?'Scanning…':'Scan receipt'}</button>
+      <button type="button" className="btn btn-secondary" disabled={scanning} onClick={()=>canScanReceipt?fileRef.current?.click():onUpgrade()}><Icon name="receipt"/>{scanning?'Scanning…':'Scan receipt'}</button>
       <input ref={fileRef} type="file" accept="image/*" capture="environment" aria-label="Take or upload a receipt photo" hidden onChange={e=>void scan(e.target.files?.[0])}/></div>
     {scanMessage&&!showExpense&&<p role="status" className="budget-message">{scanMessage}</p>}
     <div className="budget-summary">

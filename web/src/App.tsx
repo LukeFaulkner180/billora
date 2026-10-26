@@ -212,7 +212,7 @@ export default function App() {
       <div className="content" aria-live="polite">
         {userId && (!cloudReady||cloudError)?<div className="cloud-state"><div className="cloud-state-icon"><Icon name="shield"/></div><h2>{cloudError?'Unable to load your finances':'Opening your secure account…'}</h2><p>{cloudError?`Your financial data has not been overwritten. ${cloudError}`:'Checking your securely saved bills and repayments.'}</p>{cloudError&&<button className="btn btn-secondary" onClick={()=>void loadCloudData(userId).then(result=>{setData(result);setDataOwner(userId);setCloudReady(true);setCloudError('');}).catch(error=>setCloudError(error instanceof Error?error.message:'Try again later.'))}>Try again</button>}</div>:<>
           {page==='overview'&&<Overview data={data} add={kind=>add(kind)} navigate={navigate} openSignup={()=>openAccount('signup')} signedIn={Boolean(user)}/>} 
-          {page==='budget'&&<Budget data={data} update={update} notify={notify} premium={premiumAccess} onUpgrade={()=>setShowPremium(true)}/>}
+          {page==='budget'&&<Budget data={data} update={update} notify={notify} premium={premiumAccess} demoPreview={!user && showDemo} onUpgrade={()=>setShowPremium(true)}/>}
           {page==='bills'&&<Bills data={data} add={()=>add('bill')} edit={id=>edit('bill',id)} remove={id=>remove('bill',id)} pay={markBillPaid}/>}
           {page==='debts'&&<Debts data={data} add={()=>add('debt')} edit={id=>edit('debt',id)} remove={id=>remove('debt',id)} pay={id=>{const debt=data.debts.find(d=>d.id===id);if(debt)setMode({kind:'payment',item:debt});}}/>}
           {page==='planner'&&<Planner data={data} onChange={settings=>update(prev=>({...prev,settings}))}/>}
