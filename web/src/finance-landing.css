@@ -197,3 +197,70 @@
 @media(prefers-reduced-motion:reduce){
   .fin-home *, .fin-home *::before, .fin-home *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 }
+
+/* Billora editorial refinement: keep the real dashboard as the visual anchor,
+   flatten feature and pricing areas into more restrained financial information. */
+.fin-home{--fin-bg:#101619;--fin-card:#151e21;--fin-border:#2e3a3e}
+.fin-hero{gap:74px;padding-block:84px 91px}
+.fin-hero h1{font-weight:760;letter-spacing:-2px}
+.fin-hero h1 span{color:#c1d9d0}
+.fin-eyebrow{color:#a3c5b6;letter-spacing:1.25px}
+.fin-button,.fin-header-cta{border-radius:6px}
+.fin-button-primary,.fin-header-cta{background:#91dfb8;border-color:#91dfb8;color:#12231a}
+.fin-preview{border-color:#384547;background:#172125;border-radius:8px;box-shadow:0 16px 36px #0003}
+.fin-preview-top{padding:18px 22px}
+.fin-example{background:transparent;border-color:#445651;border-radius:3px;padding:4px 7px}
+.fin-preview-metrics{gap:0;padding-block:4px 25px}
+.fin-preview-metrics>div{background:transparent;border:0;border-radius:0;padding:8px 10px 8px 0}
+.fin-preview-metrics>div+div{border-left:1px solid #37464a;padding-left:20px}
+.fin-bill-symbol{border-radius:4px;background:transparent;color:#a7c8b9;width:24px;height:24px}
+.fin-preview-bill{border-color:#29383b}
+.fin-capabilities{background:transparent}
+.fin-capability-items{padding-block:19px}
+.fin-capability-items svg{color:#9fc9b4}
+.fin-section{padding-block:82px}
+.fin-section-heading{margin-bottom:22px}
+.fin-features-grid{gap:0 56px}
+.fin-feature,.fin-feature-large{border:0;border-bottom:1px solid #354247;border-radius:0;padding:28px 0 35px;background:transparent;box-shadow:none}
+.fin-feature:nth-child(odd){padding-right:26px;border-right:1px solid #354247}
+.fin-feature:nth-child(even){padding-left:0}
+.fin-feature h3{font-size:21px;font-weight:710;margin-top:16px}
+.fin-feature-heading{justify-content:flex-start;gap:12px;color:#9dadac}
+.fin-icon{height:27px;width:27px;background:transparent;color:#a7d7be;border-radius:0}
+.fin-feature-demo{margin-top:18px;min-height:0;padding:18px 0 0;border:0;border-top:1px solid #304044;border-radius:0;background:transparent}
+.fin-demo-bill{border-color:#29393c}
+.fin-mini-row .fin-track{background:#273835}
+.fin-debt-demo .fin-track,.fin-savings-demo .fin-track{background:#283a39}
+.fin-section-alt{background:#131b1e;border-color:#2b373b}
+.fin-price-grid{gap:0;border-top:1px solid #41504e;border-bottom:1px solid #41504e}
+.fin-price-card,.fin-price-card.fin-price-premium{background:transparent;border:0;border-radius:0;padding:32px 32px 26px;box-shadow:none}
+.fin-price-card:first-child{padding-left:0}
+.fin-price-card:last-child{padding-right:0}
+.fin-price-card+.fin-price-card{border-left:1px solid #344347}
+.fin-price-card .fin-price-title{font-size:14px}
+.fin-price-card .fin-price strong{font-size:39px}
+.fin-price-card .fin-price{margin:17px 0 12px}
+.fin-price-card ul{color:#bdcfc9}
+.fin-coming{border:0;border-top:1px solid #344347;border-radius:0;background:transparent;text-align:left;padding:15px 0 0;color:#91b9a6}
+.fin-saving-pill{border-radius:3px;background:#29493b;color:#b6e9c9}
+.fin-faq-list details{border-color:#344347}
+.fin-end{background:transparent;border:0;border-top:1px solid #3d4b4d;border-radius:0;padding:47px 0 0;margin-block:18px 78px;box-shadow:none}
+.fin-footer{background:#0c1316}
+@media(max-width:1030px){
+ .fin-hero{gap:34px}.fin-features-grid{column-gap:28px}
+ .fin-feature:nth-child(odd){padding-right:18px}
+ .fin-price-card,.fin-price-card.fin-price-premium{padding-inline:22px}
+ .fin-price-card:first-child{padding-left:0}.fin-price-card:last-child{padding-right:0}
+}
+@media(max-width:760px){
+ .fin-hero{padding-block:52px 58px;gap:34px}.fin-section{padding-block:62px}
+ .fin-features-grid{grid-template-columns:minmax(0,1fr);gap:0}
+ .fin-feature,.fin-feature-large,.fin-feature:nth-child(odd),.fin-feature:nth-child(even){border:0;border-bottom:1px solid #354247;padding:25px 0 32px;background:transparent}
+ .fin-price-grid{grid-template-columns:minmax(0,1fr);border:0;border-top:1px solid #41504e}
+ .fin-price-card,.fin-price-card.fin-price-premium,.fin-price-card:first-child,.fin-price-card:last-child{padding:27px 0 30px;border:0;border-bottom:1px solid #3b494a}
+ .fin-price-card+.fin-price-card{border-left:0}.fin-end{margin-block:8px 54px;padding-top:35px}
+}
+@media(max-width:420px){
+ .fin-hero h1{letter-spacing:-1.5px}.fin-preview-metrics>div{padding:8px 6px 8px 0}
+ .fin-preview-metrics>div+div{padding-left:12px}.fin-preview-metrics strong{font-size:17px}
+}
