@@ -264,3 +264,72 @@
  .fin-hero h1{letter-spacing:-1.5px}.fin-preview-metrics>div{padding:8px 6px 8px 0}
  .fin-preview-metrics>div+div{padding-left:12px}.fin-preview-metrics strong{font-size:17px}
 }
+
+/* Centered editorial homepage. Align section content centrally while retaining
+   the natural right alignment of prices/dates inside the dashboard example. */
+.fin-hero{
+  grid-template-columns:minmax(0,1fr);
+  text-align:center;
+  justify-items:center;
+  gap:44px;
+  padding-block:72px 82px;
+}
+.fin-hero-copy{width:100%;max-width:840px;margin-inline:auto;}
+.fin-hero h1{margin-inline:auto;max-width:820px;line-height:1.11;}
+.fin-lede{max-width:650px;margin-inline:auto!important;}
+.fin-hero-actions{justify-content:center;}
+.fin-launch-note{justify-content:center;margin-inline:auto!important;}
+.fin-preview{width:100%;max-width:770px;text-align:left;}
+.fin-capability-items{justify-content:center;column-gap:60px;}
+.fin-section-heading{max-width:760px;margin-inline:auto;text-align:center;margin-bottom:35px;}
+.fin-section-heading p{margin-inline:auto!important;}
+.fin-feature{text-align:center;}
+.fin-feature-heading{justify-content:center;}
+.fin-feature>p{margin-inline:auto!important;}
+.fin-feature-demo{max-width:460px;margin:22px auto 0;text-align:left;}
+.fin-how-grid,.fin-faq-grid{grid-template-columns:minmax(0,1fr);text-align:center;gap:35px;}
+.fin-how-grid>div:first-child{max-width:715px;margin-inline:auto;}
+.fin-how-grid>div>p{margin-inline:auto!important;}
+.fin-steps{grid-template-columns:repeat(3,minmax(0,1fr));gap:0;max-width:1100px;margin-inline:auto;}
+.fin-steps>div,.fin-steps>div:first-child{
+  text-align:center;align-items:center;flex-direction:column;gap:14px;
+  padding:10px 25px 14px;border-bottom:0;
+}
+.fin-steps>div+div{border-left:1px solid #344648;}
+.fin-steps>div>span{font-size:15px;}
+.fin-steps h3{font-size:16px;}
+.fin-steps p{max-width:275px;margin-inline:auto!important;}
+.fin-price-card,.fin-price-card.fin-price-premium{text-align:center;align-items:stretch;}
+.fin-price-title{justify-content:center;}
+.fin-price{justify-content:center;}
+.fin-price-card>p{max-width:255px;margin-inline:auto!important;}
+.fin-price-card ul{list-style:none;padding:17px 0 14px;margin-inline:0;text-align:center;}
+.fin-price-card li{padding-block:2px;}
+.fin-coming{text-align:center;}
+.fin-faq-grid{max-width:850px;}
+.fin-faq-list{text-align:left;max-width:800px;width:100%;margin-inline:auto;}
+.fin-end{flex-direction:column;text-align:center;align-items:center;gap:20px;}
+.fin-end>div:first-child{max-width:690px;}
+.fin-end h2,.fin-end p{margin-inline:auto!important;}
+.fin-end-actions{flex-direction:row;align-items:center;justify-content:center;width:auto;flex-wrap:wrap;}
+.fin-footer-inner{flex-direction:column;justify-content:center;text-align:center;gap:14px;padding-block:32px;}
+.fin-footer p{max-width:520px;}
+@media(max-width:760px){
+  .fin-hero{gap:34px;padding-block:50px 58px;}
+  .fin-capability-items{justify-content:center;gap:15px 24px;}
+  .fin-feature,.fin-feature-large,.fin-feature:nth-child(odd),.fin-feature:nth-child(even){text-align:center;}
+  .fin-steps{grid-template-columns:1fr;max-width:450px;}
+  .fin-steps>div,.fin-steps>div:first-child{
+    padding:21px 10px;border-bottom:1px solid #344648;
+  }
+  .fin-steps>div+div{border-left:0;}
+  .fin-price-card,.fin-price-card.fin-price-premium,.fin-price-card:first-child,.fin-price-card:last-child{text-align:center;}
+  .fin-end{align-items:center;text-align:center;}
+  .fin-end-actions{flex-direction:column;width:100%;}
+  .fin-end-actions .fin-button{width:100%;}
+}
+@media(max-width:420px){
+  .fin-hero h1{font-size:35px;}
+  .fin-hero-actions{align-items:stretch;}
+  .fin-faq-list{max-width:100%;}
+}
