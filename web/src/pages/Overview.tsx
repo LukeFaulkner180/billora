@@ -5,7 +5,7 @@ import {Button, Empty, PageHeading} from '../components/Ui';
 import {Icon} from '../components/Icons';
 import {AnimatedMoney} from '../components/AnimatedMoney';
 
-export function Overview({data, add, navigate}: {data: FinanceData; add: (kind: 'bill'|'debt') => void; navigate: (page: Page) => void}) {
+export function Overview({data, add, navigate, openSignup, signedIn}: {data: FinanceData; add: (kind: 'bill'|'debt') => void; navigate: (page: Page) => void; openSignup: () => void; signedIn: boolean}) {
   const income = total(data.incomes.map(i => monthly(i.amount, i.frequency)));
   const bills = total(data.bills.map(b => monthly(b.amount, b.frequency)));
   const minimums = total(data.debts.filter(d => d.balance > 0).map(d => d.minPayment));
@@ -38,6 +38,7 @@ export function Overview({data, add, navigate}: {data: FinanceData; add: (kind: 
         <div className="hero-visual-foot"><span><i/> YOUR PROGRESS</span><strong>{progress}% towards debt-free</strong></div>
       </div>
     </section>
+    {!signedIn && <div className="mobile-account-prompt"><span className="prompt-icon"><Icon name="shield"/></span><div><strong>Want to save your progress?</strong><p>See how Billora accounts will work. Sign-in is not live yet.</p></div><button type="button" onClick={openSignup}>View sign up <Icon name="arrow"/></button></div>}
     {data.mode === 'demo' && <div className="newbie-banner"><Icon name="info"/><span>You're viewing <strong>example data</strong>. This demo isn't connected to your bank.</span><button onClick={() => navigate('settings')}>Start with my data</button></div>}
     {data.bills.some(b => b.nextDue < today()) && <div className="alert-list"><div className="alert-line"><Icon name="alert"/><span>Some bills have overdue dates. Check them in My Bills.</span></div></div>}
     <section className="stat-grid" aria-label="Monthly financial summary">

@@ -4,5 +4,6 @@ import App from './App';
 import './styles.css';
 import './react-tweaks.css';
 import './premium.css';
+import './mobile-polish.css';
 
 createRoot(document.getElementById('root')!).render(<React.StrictMode><App/></React.StrictMode>);

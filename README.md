@@ -63,3 +63,11 @@ PROJECT_BUDGET.md            # Proposed allocation, £0 actual spend
 ### Further work before inviting real users
 
 Review authentication redirects, password recovery, API rate limiting, privacy notices, error telemetry, account deletion, cloud data retention and data backups. The interest models are estimates, not regulated financial advice.
+
+## Open the account screens
+
+- [Sign in](https://lukefaulkner180.github.io/billora/?auth=login)
+- [Create an account](https://lukefaulkner180.github.io/billora/?auth=signup)
+
+On mobile, use the **Sign up** or **Sign in** buttons at the top of the dashboard. Account screens currently show a setup notice until a dedicated Billora Supabase project and the Google/Microsoft OAuth providers are configured. Do not enter real financial information yet.
+

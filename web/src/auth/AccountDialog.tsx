@@ -1,4 +1,4 @@
-import {useState, type FormEvent} from 'react';
+import {useEffect, useState, type FormEvent} from 'react';
 import {supabase, accountsConfigured} from './client';
 import {Icon} from '../components/Icons';
 
@@ -10,14 +10,20 @@ function GoogleMark() {
 function MicrosoftMark() {
   return <svg width="19" height="19" viewBox="0 0 21 21" aria-hidden="true"><path fill="#f35325" d="M0 0h10v10H0z"/><path fill="#81bc06" d="M11 0h10v10H11z"/><path fill="#05a6f0" d="M0 11h10v10H0z"/><path fill="#ffba08" d="M11 11h10v10H11z"/></svg>;
 }
-export function AccountDialog({onClose, notice}: {onClose:()=>void;notice:(message:string)=>void}) {
-  const [view,setView] = useState<AuthView>('login');
+export function AccountDialog({onClose, notice, initialView='login'}: {onClose:()=>void;notice:(message:string)=>void;initialView?: 'login'|'signup'}) {
+  const [view,setView] = useState<AuthView>(initialView);
   const [email,setEmail] = useState('');
   const [password,setPassword] = useState('');
   const [busy,setBusy] = useState(false);
   const [feedback,setFeedback] = useState('');
   const [reveal,setReveal] = useState(false);
   const choose = (next:AuthView) => {setView(next);setFeedback('');setPassword('');};
+  useEffect(()=>{
+    const previous=document.body.style.overflow;document.body.style.overflow='hidden';
+    const escape=(event:KeyboardEvent)=>{if(event.key==='Escape')onClose();};
+    document.addEventListener('keydown',escape);
+    return ()=>{document.body.style.overflow=previous;document.removeEventListener('keydown',escape);};
+  },[onClose]);
   const social = async (provider:'google'|'azure') => {
     if (!supabase) {setFeedback('Account setup is being connected. For now, continue exploring the demo.');return;}
     setBusy(true);setFeedback('');
