@@ -144,3 +144,16 @@
 .welcome-loading{min-height:100dvh;background:#091219;color:#a6c3c2;display:flex;justify-content:center;align-items:center;flex-direction:column;gap:15px}
 .welcome-loading p{font-weight:700;font-size:12px}
 @media(max-width:900px){.mobile-brand{display:flex}}
+
+/* Launch-preview pricing: visually aligned with Billora Midnight, mobile-first. */
+.welcome-pricing{padding-block:62px 76px}
+.welcome-pricing-grid{max-width:1150px;margin:27px auto 0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;padding-inline:20px}
+.welcome-pricing-card{background:linear-gradient(148deg,#192b31,#101e27);border:1px solid #334a4e;border-radius:22px;padding:27px 24px;display:flex;flex-direction:column;gap:16px;box-shadow:0 14px 34px rgba(0,0,0,.16)}
+.welcome-pricing-card.is-premium{background:linear-gradient(145deg,#1b4037,#10242a);border-color:#43836a}
+.welcome-pricing-card>span{letter-spacing:1.1px;color:#9fecca;font-size:11px;font-weight:800}
+.welcome-pricing-card h3{font-size:clamp(28px,3.2vw,40px);color:#f0fff8;line-height:1.15;margin:0}
+.welcome-pricing-card h3 small{font-size:14px;color:#b2ccc6;font-weight:500}
+.welcome-pricing-card p{line-height:1.65;color:#b4cac5;font-size:14px;flex:1}
+.welcome-pricing-card button{border:1px solid #70d2a3;border-radius:12px;background:#86edbd;color:#0a2019;font-weight:800;cursor:pointer;min-height:44px;padding:10px 14px}
+.welcome-pricing-soon{color:#b9d7c8;font-size:12px;border-top:1px solid #3c6353;padding-top:14px}
+@media(max-width:800px){.welcome-pricing-grid{grid-template-columns:1fr;max-width:530px;padding-inline:18px}.welcome-pricing-card{padding:22px;gap:12px}.welcome-pricing{padding-block:40px 56px}}

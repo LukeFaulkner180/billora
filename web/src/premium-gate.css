@@ -42,3 +42,9 @@
 .premium-primary{width:100%;justify-content:center}
 @media(max-width:650px){.premium-intro{align-items:flex-start;flex-direction:column}.premium-intro button{width:100%}.category-budget-list,.category-budget-form{grid-template-columns:1fr}.premium-dialog{padding:23px}.premium-plan-grid{grid-template-columns:1fr}.category-budget-header{align-items:flex-start;flex-direction:column}}
 @media(prefers-reduced-motion:reduce){.premium-intro,.category-budget-item{animation:none}}
+
+/* Show the agreed monthly and annual pricing alongside Free in the upgrade preview. */
+.premium-plan-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.premium-plan-grid .premium-yearly{grid-column:1/-1}
+.premium-plan-grid strong em{font-size:13px;font-weight:500;font-style:normal;color:#c1decf}
+@media(max-width:650px){.premium-plan-grid{grid-template-columns:1fr}.premium-plan-grid .premium-yearly{grid-column:auto}}
