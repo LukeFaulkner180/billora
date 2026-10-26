@@ -1,6 +1,8 @@
 import {useEffect,useState,type FormEvent} from 'react';
 import type {FinanceData,Bill,SpendingCategory,SavingsGoal} from '../types';
 import {supabase} from '../auth/client';
+// App requires an authenticated session before rendering this page.
+const jointClient = supabase!;
 import {normaliseData} from '../lib/storage';
 import {emptyData} from '../lib/storage';
 import {dateLocal,spendingCategories} from '../lib/spending';
@@ -27,19 +29,19 @@ export function Together({userId,premium,notify,requestConfirm}:Props){
  async function load(){
    setLoading(true);setError('');
    try{
-    const m=await supabase.from('billora_household_members').select('household_id,role').eq('user_id',userId).maybeSingle();
+    const m=await jointClient.from('billora_household_members').select('household_id,role').eq('user_id',userId).maybeSingle();
     if(m.error)throw m.error;
     let hid=m.data?.household_id as string|undefined;
     if(!hid){
       setHouse(null);setMembers([]);setDirty(false);
-      const pending=await supabase.rpc('billora_joint_pending');
+      const pending=await jointClient.rpc('billora_joint_pending');
       if(pending.error)throw pending.error;
       setInvites((pending.data||[]) as Invitation[]);return;
     }
     const [h,mem,fin]=await Promise.all([
-     supabase.from('billora_households').select('id,name,owner_id').eq('id',hid).single(),
-     supabase.from('billora_household_members').select('user_id,role').eq('household_id',hid),
-     supabase.from('billora_household_finances').select('data,revision').eq('household_id',hid).single()
+     jointClient.from('billora_households').select('id,name,owner_id').eq('id',hid).single(),
+     jointClient.from('billora_household_members').select('user_id,role').eq('household_id',hid),
+     jointClient.from('billora_household_finances').select('data,revision').eq('household_id',hid).single()
     ]);
     if(h.error)throw h.error;if(mem.error)throw mem.error;if(fin.error)throw fin.error;
     setHouse(h.data as Household);setMembers((mem.data||[]) as Member[]);
@@ -56,23 +58,23 @@ export function Together({userId,premium,notify,requestConfirm}:Props){
   try{
     // Server-side optimistic revision check prevents silent overwrite by the second partner.
     const clean={...joint,categoryBudgets:{},settings:{...joint.settings,weeklyBudget:0}};
-    const {data,error}=await supabase.rpc('billora_joint_save',{p_house:house.id,p_data:clean,p_revision:revision});
+    const {data,error}=await jointClient.rpc('billora_joint_save',{p_house:house.id,p_data:clean,p_revision:revision});
     if(error)throw error;
     setRevision(data as number);setDirty(false);notify('Joint household saved.');
   }catch(e){setError(e instanceof Error?e.message:'Could not save changes. Reload shared data and try again.');}
   finally{setSaving(false);}
  }
  async function create(event:FormEvent){event.preventDefault();
-  setError('');const {error}=await supabase.rpc('billora_joint_create',{p_name:houseName.trim()||'Our household'});
+  setError('');const {error}=await jointClient.rpc('billora_joint_create',{p_name:houseName.trim()||'Our household'});
   if(error){setError(error.message);return;}notify('Joint household created.');void load();
  }
  async function invite(event:FormEvent){event.preventDefault();if(!house)return;
-  const {error}=await supabase.rpc('billora_joint_invite',{p_house:house.id,p_email:partnerEmail.trim().toLowerCase()});
+  const {error}=await jointClient.rpc('billora_joint_invite',{p_house:house.id,p_email:partnerEmail.trim().toLowerCase()});
   if(error){setError(error.message);return;}setPartnerEmail('');setError('');
   notify('Invite saved. Ask your partner to sign in to Billora Together using that exact email.');
  }
  async function accept(id:string){
-  const {error}=await supabase.rpc('billora_joint_accept',{p_invite:id});
+  const {error}=await jointClient.rpc('billora_joint_accept',{p_invite:id});
   if(error){setError(error.message);return;}notify('You joined the household.');void load();
  }
  function leave(){
@@ -80,7 +82,7 @@ export function Together({userId,premium,notify,requestConfirm}:Props){
   requestConfirm({title:house.owner_id===userId?'Delete shared household?':'Leave household?',message:house.name,
   detail:house.owner_id===userId?'This permanently deletes all shared finances for both partners. Personal finances remain private and untouched.':'Your partner will keep the joint records. Your personal finances remain private.',
   confirmLabel:house.owner_id===userId?'Delete household':'Leave household',tone:'danger'},
-  ()=>void supabase.rpc('billora_joint_leave',{p_house:house.id}).then(({error})=>{
+  ()=>void jointClient.rpc('billora_joint_leave',{p_house:house.id}).then(({error})=>{
     if(error){setError(error.message);return;}notify('Joint membership updated.');void load();
   }));
  }
