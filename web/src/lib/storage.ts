@@ -66,7 +66,7 @@ export function normaliseData(payload: unknown): FinanceData {
   });
   const spending:SpendingEntry[]=(Array.isArray(data.spending)?data.spending:[]).slice(0,2000).map((value:unknown)=>{
     const item=object(value);const category=spendingCategories.includes(item.category as SpendingCategory)?item.category as SpendingCategory:'Other';
-    return {id:text(item.id)||makeId(),name:text(item.name)||'Spending',amount:money(item.amount),date:safeDate(item.date,today()),category,source:item.source==='receipt'?'receipt':'manual'};
+    return {id:text(item.id)||makeId(),name:text(item.name)||'Spending',amount:money(item.amount),date:safeDate(item.date,today()),category,source:(item.source==='receipt'?'receipt':'manual') as SpendingEntry['source']};
   }).filter(item=>item.amount>0);
   const savingsGoals:SavingsGoal[]=(Array.isArray(data.savingsGoals)?data.savingsGoals:[]).slice(0,100).map((value:unknown)=>{
     const item=object(value);
