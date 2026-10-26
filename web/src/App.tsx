@@ -15,7 +15,7 @@ import {Debts} from './pages/Debts';
 import {Planner} from './pages/Planner';
 import {Settings} from './pages/Settings';
 import {Budget} from './pages/Budget';
-import {Together} from './pages/Together';
+import {Together,TogetherDemo} from './pages/Together';
 import {AccountDialog} from './auth/AccountDialog';
 import {PasswordResetDialog} from './auth/PasswordResetDialog';
 import {accountsConfigured,supabase} from './auth/client';
@@ -239,7 +239,7 @@ export default function App() {
           {page==='bills'&&<Bills data={data} add={()=>add('bill')} edit={id=>edit('bill',id)} remove={id=>remove('bill',id)} pay={markBillPaid}/>}
           {page==='debts'&&<Debts data={data} add={()=>add('debt')} edit={id=>edit('debt',id)} remove={id=>remove('debt',id)} pay={id=>{const debt=data.debts.find(d=>d.id===id);if(debt)setMode({kind:'payment',item:debt});}}/>}
           {page==='planner'&&<Planner data={data} onChange={settings=>update(prev=>({...prev,settings}))}/>}
-          {page==='together'&&userId&&<Together userId={userId} premium={premiumAccess} notify={notify} requestConfirm={requestConfirm}/>}
+          {page==='together'&&(userId?<Together userId={userId} premium={premiumAccess} notify={notify} requestConfirm={requestConfirm}/>:<TogetherDemo onSignup={()=>openAccount('signup')}/>)}
           {page==='settings'&&<Settings data={data} add={()=>add('income')} edit={id=>edit('income',id)} remove={id=>remove('income',id)} replace={value=>setData({...value,mode:'personal'})} cloud={Boolean(userId)} notify={notify} requestConfirm={requestConfirm}/>}
         </>}
       </div>

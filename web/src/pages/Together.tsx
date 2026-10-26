@@ -141,3 +141,28 @@ export function Together({userId,premium,notify,requestConfirm}:Props){
     </div>}
  </div>;
 }
+
+
+/** Guest-only, read-only Premium preview; never loads or saves personal or joint account data. */
+export function TogetherDemo({onSignup}:{onSignup:()=>void}){
+ return <div className="together-page">
+  <div className="page-heading"><div><div className="page-eyebrow">BILLORA TOGETHER · DEMO</div><h1>Money works better together.</h1><p>Manage the household in a shared workspace without combining your private accounts.</p></div></div>
+  <section className="together-unlock">
+   <span className="together-tag"><Icon name="sparkle" size={14}/> PREMIUM FEATURE · PREVIEW</span>
+   <h2>One household. Two separate logins.</h2>
+   <p>Both partners can record household bills, everyday purchases and savings progress. Your own personal records remain private.</p>
+   <div className="together-benefits"><span>✓ Up to two people</span><span>✓ Shared household bills</span><span>✓ Shared purchases</span><span>✓ Joint savings goals</span></div>
+   <button type="button" className="btn btn-primary" onClick={onSignup}>Create a personal Billora account</button>
+   <p>Joint households require Premium. Subscriptions aren't on sale yet, and this example doesn't save any information.</p>
+  </section>
+  <div className="together-stats" aria-label="Illustrative joint household example">
+   <div><span>Example monthly shared bills</span><strong>£1,320.00</strong></div>
+   <div><span>Example recorded purchases</span><strong>£245.60</strong></div>
+   <div><span>Example savings progress</span><strong>£650.00</strong></div>
+  </div>
+  <div className="together-grid">
+   <section className="together-panel"><h3>Example household bills</h3><div className="together-line"><div><strong>Rent</strong><small>Shared monthly bill</small></div><b>£950.00</b></div><div className="together-line"><div><strong>Utilities</strong><small>Shared monthly bill</small></div><b>£145.00</b></div></section>
+   <section className="together-panel"><h3>Example joint savings</h3><div className="together-line"><div><strong>Holiday together</strong><small>£650 of £2,000 saved</small></div><b>32.5%</b></div><p>This is a fictional example of the Premium joint workspace.</p></section>
+  </div>
+ </div>;
+}
