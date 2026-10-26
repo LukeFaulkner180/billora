@@ -1,12 +1,12 @@
 import {useRef} from 'react';
 import type {FinanceData} from '../types';
 import {frequencies, monthly, pounds, total} from '../lib/money';
-import {exportData, normaliseData} from '../lib/storage';
+import {emptyData, exportData, normaliseData} from '../lib/storage';
 import {Button, Empty, PageHeading} from '../components/Ui';
 import {Icon} from '../components/Icons';
 export function Settings({data,add,edit,remove,replace,cloud,notify}: {data: FinanceData;add:()=>void;edit:(id:string)=>void;remove:(id:string)=>void;replace:(data:FinanceData)=>void;cloud:boolean;notify:(s:string)=>void}) {
   const fileRef = useRef<HTMLInputElement>(null);
-  const start = () => {if (window.confirm('Remove every bill, debt and income from this workspace? This cannot be undone.')) replace({version:2,mode:'personal',incomes:[],bills:[],debts:[],settings:{strategy:'avalanche',extraPayment:0}})};
+  const start = () => {if (window.confirm('Remove all bills, debts, spending, savings goals and income from this workspace? This cannot be undone.')) replace(emptyData())};
   const restore = async (file: File | undefined) => {
     if(!file) return;
     try {
@@ -27,7 +27,7 @@ export function Settings({data,add,edit,remove,replace,cloud,notify}: {data: Fin
         <p className="plain-note">{cloud?'Your signed-in account stores a private finance snapshot in Supabase. You can export a personal backup at any time. Never share your login details.':'You are using a local browser demo. Data can be lost if you clear browser storage. Avoid entering real account numbers or other sensitive financial information until secure accounts are enabled.'}</p>
         <div className="data-buttons"><Button variant="secondary" onClick={()=>{exportData(data);notify('Backup downloaded.')}}><Icon name="download"/> Export backup</Button><Button variant="secondary" onClick={()=>fileRef.current?.click()}><Icon name="upload"/> Import backup</Button><input ref={fileRef} aria-label="Import Billora JSON backup" type="file" accept=".json,application/json" hidden onChange={e=>{void restore(e.target.files?.[0]);}}/></div>
         <div className="settings-separator"/>
-        <h3>Reset this workspace</h3><p className="plain-note">Delete all bills, debts and income from this workspace. This cannot be undone.</p><Button variant="danger" onClick={start}><Icon name="trash"/> Clear all data</Button>
+        <h3>Reset this workspace</h3><p className="plain-note">Delete all bills, debts, spending, savings goals and income from this workspace. This cannot be undone.</p><Button variant="danger" onClick={start}><Icon name="trash"/> Clear all data</Button>
       </section>
     </div>
     {data.mode==='demo' && <div className="newbie-banner"><Icon name="info"/><span>You're still exploring sample figures.</span><button onClick={start}>Start with my own data</button></div>}

@@ -1,4 +1,5 @@
-import type { Bill, Category, Debt, FinanceData, Frequency, Income } from '../types';
+import type {Bill,Category,Debt,FinanceData,Frequency,Income,SpendingCategory,SpendingEntry,SavingsGoal} from '../types';
+import {spendingCategories,dateLocal} from './spending';
 import {categories, dueOnOrAfter, formatDate, frequencies, makeId, round, today, validDate} from './money';
 
 const KEY = 'billora_mvp_v2';
@@ -6,7 +7,7 @@ const OLD_KEY = 'billora_mvp_v1';
 const newBill = (name: string, amount: number, day: number, category: Category): Bill => ({id: makeId(), name, amount, nextDue: dueOnOrAfter(day), anchorDay: day, frequency: 'monthly', category, payments: []});
 const newDebt = (name: string, balance: number, originalBalance: number, apr: number, minPayment: number, promoEnd = ''): Debt => ({id: makeId(), name, balance, originalBalance, apr, minPayment, promoEnd, payments: []});
 export function emptyData(): FinanceData {
-  return {version:2,mode:'personal',incomes:[],bills:[],debts:[],settings:{strategy:'avalanche',extraPayment:0}};
+  return {version:2,mode:'personal',incomes:[],bills:[],debts:[],spending:[],savingsGoals:[],settings:{strategy:'avalanche',extraPayment:0,weeklyBudget:0}};
 }
 export function demoData(): FinanceData {
   return {
@@ -25,7 +26,13 @@ export function demoData(): FinanceData {
       newDebt('Credit card', 1900, 3200, 24.9, 90), newDebt('Car loan', 5600, 9200, 7.9, 155),
       newDebt('0% credit card', 1250, 2300, 21.9, 50, '2027-06-01'),
     ],
-    settings: {strategy: 'avalanche', extraPayment: 100},
+    spending: [
+      {id:makeId(),name:'Weekly groceries',amount:48.75,category:'Groceries',date:dateLocal(),source:'manual'},
+      {id:makeId(),name:'Coffee & lunch',amount:12.40,category:'Eating out',date:dateLocal(),source:'manual'},
+      {id:makeId(),name:'Petrol top-up',amount:35,category:'Transport',date:dateLocal(new Date(Date.now()-2*86400000)),source:'manual'},
+    ],
+    savingsGoals:[{id:makeId(),name:'Emergency fund',target:2000,saved:625,targetDate:''}],
+    settings: {strategy: 'avalanche', extraPayment: 100, weeklyBudget:125},
   };
 }
 const object = (value: unknown): Record<string, unknown> => value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
@@ -57,8 +64,16 @@ export function normaliseData(payload: unknown): FinanceData {
     }).filter(p => p.amount > 0) : [];
     return {id: text(item.id) || makeId(), name: text(item.name) || 'Debt', balance, originalBalance: Math.max(balance, money(item.originalBalance)), apr: percentage(item.apr), minPayment: money(item.minPayment), promoEnd: validDate(item.promoEnd) ? item.promoEnd : '', payments};
   });
+  const spending:SpendingEntry[]=(Array.isArray(data.spending)?data.spending:[]).slice(0,2000).map((value:unknown)=>{
+    const item=object(value);const category=spendingCategories.includes(item.category as SpendingCategory)?item.category as SpendingCategory:'Other';
+    return {id:text(item.id)||makeId(),name:text(item.name)||'Spending',amount:money(item.amount),date:safeDate(item.date,today()),category,source:item.source==='receipt'?'receipt':'manual'};
+  }).filter(item=>item.amount>0);
+  const savingsGoals:SavingsGoal[]=(Array.isArray(data.savingsGoals)?data.savingsGoals:[]).slice(0,100).map((value:unknown)=>{
+    const item=object(value);
+    return {id:text(item.id)||makeId(),name:text(item.name)||'Savings goal',target:money(item.target),saved:money(item.saved),targetDate:validDate(item.targetDate)?item.targetDate:''};
+  }).filter(item=>item.target>0);
   const settings = object(data.settings);
-  return {version: 2, mode: data.mode === 'demo' ? 'demo' : 'personal', incomes, bills, debts, settings: {strategy: settings.strategy === 'snowball' ? 'snowball' : 'avalanche', extraPayment: Math.min(1e6, money(settings.extraPayment))}};
+  return {version: 2, mode: data.mode === 'demo' ? 'demo' : 'personal', incomes, bills, debts, spending, savingsGoals, settings: {strategy: settings.strategy === 'snowball' ? 'snowball' : 'avalanche', extraPayment: Math.min(1e6, money(settings.extraPayment)),weeklyBudget:Math.min(1e8,money(settings.weeklyBudget))}};
 }
 export function initialData(): FinanceData {
   try {

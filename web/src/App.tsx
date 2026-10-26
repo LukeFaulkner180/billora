@@ -13,12 +13,13 @@ import {Bills} from './pages/Bills';
 import {Debts} from './pages/Debts';
 import {Planner} from './pages/Planner';
 import {Settings} from './pages/Settings';
+import {Budget} from './pages/Budget';
 import {AccountDialog} from './auth/AccountDialog';
 import {accountsConfigured,supabase} from './auth/client';
 import {loadCloudData,saveCloudData} from './auth/cloud';
 
 const pages: Record<Page,{name:string,short:string,icon:string}> = {
-  overview:{name:'Overview',short:'Home',icon:'overview'},bills:{name:'My bills',short:'Bills',icon:'calendar'},debts:{name:'My debts',short:'Debts',icon:'card'},planner:{name:'Debt-free planner',short:'Planner',icon:'trend'},settings:{name:'Settings & income',short:'Settings',icon:'settings'},
+  overview:{name:'Overview',short:'Home',icon:'overview'},budget:{name:'Budget & spending',short:'Budget',icon:'wallet'},bills:{name:'My bills',short:'Bills',icon:'calendar'},debts:{name:'My debts',short:'Debts',icon:'card'},planner:{name:'Debt-free planner',short:'Planner',icon:'trend'},settings:{name:'Settings & income',short:'Settings',icon:'settings'},
 };
 const pageFromHash = ():Page => window.location.hash.slice(1) in pages ? window.location.hash.slice(1) as Page : 'overview';
 // Direct links: /billora/?auth=login and /billora/?auth=signup.
@@ -188,7 +189,7 @@ export default function App() {
       <button className="brand" type="button" onClick={()=>navigate('overview')} aria-label="Billora overview"><Brand/></button>
       <div className="sidebar-caption">A better relationship with money.</div><button type="button" className="site-link" onClick={goHome}><Icon name="arrow"/> View welcome page</button>
       <div className="nav-intro">YOUR WORKSPACE</div>
-      <nav className="nav-list">{(['overview','bills','debts','planner'] as Page[]).map(id=>navButton(id))}</nav>
+      <nav className="nav-list">{(['overview','budget','bills','debts','planner'] as Page[]).map(id=>navButton(id))}</nav>
       <div className="nav-intro lower">ACCOUNT</div><nav className="nav-list">{navButton('settings')}</nav>
       <div className="sidebar-bottom">
         <div className="help-card"><span className="help-sparkle">✦</span><strong>Make money feel lighter.</strong><p>Little steps today. More freedom tomorrow.</p><div className="help-progress"><span/></div></div>
@@ -199,6 +200,7 @@ export default function App() {
       <div className="content" aria-live="polite">
         {userId && (!cloudReady||cloudError)?<div className="cloud-state"><div className="cloud-state-icon"><Icon name="shield"/></div><h2>{cloudError?'Unable to load your finances':'Opening your secure account…'}</h2><p>{cloudError?`Your financial data has not been overwritten. ${cloudError}`:'Checking your securely saved bills and repayments.'}</p>{cloudError&&<button className="btn btn-secondary" onClick={()=>void loadCloudData(userId).then(result=>{setData(result);setDataOwner(userId);setCloudReady(true);setCloudError('');}).catch(error=>setCloudError(error instanceof Error?error.message:'Try again later.'))}>Try again</button>}</div>:<>
           {page==='overview'&&<Overview data={data} add={kind=>add(kind)} navigate={navigate} openSignup={()=>openAccount('signup')} signedIn={Boolean(user)}/>} 
+          {page==='budget'&&<Budget data={data} update={update} notify={notify}/>}
           {page==='bills'&&<Bills data={data} add={()=>add('bill')} edit={id=>edit('bill',id)} remove={id=>remove('bill',id)} pay={markBillPaid}/>}
           {page==='debts'&&<Debts data={data} add={()=>add('debt')} edit={id=>edit('debt',id)} remove={id=>remove('debt',id)} pay={id=>{const debt=data.debts.find(d=>d.id===id);if(debt)setMode({kind:'payment',item:debt});}}/>}
           {page==='planner'&&<Planner data={data} onChange={settings=>update(prev=>({...prev,settings}))}/>}

@@ -2,7 +2,11 @@
 export type Frequency = 'weekly' | 'fourweekly' | 'monthly' | 'quarterly' | 'yearly';
 export type Category = 'Home' | 'Utilities' | 'Subscriptions' | 'Insurance' | 'Transport' | 'Other';
 export type Strategy = 'snowball' | 'avalanche';
-export type Page = 'overview' | 'bills' | 'debts' | 'planner' | 'settings';
+export type Page = 'overview' | 'budget' | 'bills' | 'debts' | 'planner' | 'settings';
+export type SpendingCategory = 'Groceries' | 'Eating out' | 'Transport' | 'Shopping' | 'Entertainment' | 'Health' | 'Other';
+export type SpendingPeriod = 'daily' | 'weekly' | 'monthly' | 'yearly';
+export interface SpendingEntry {id:string;name:string;amount:number;date:string;category:SpendingCategory;source:'manual'|'receipt'}
+export interface SavingsGoal {id:string;name:string;target:number;saved:number;targetDate:string}
 
 export interface BillPayment { date: string; amount: number; due: string }
 export interface Bill {
@@ -33,5 +37,7 @@ export interface FinanceData {
   incomes: Income[];
   bills: Bill[];
   debts: Debt[];
-  settings: { strategy: Strategy; extraPayment: number };
+  spending: SpendingEntry[];
+  savingsGoals: SavingsGoal[];
+  settings: { strategy: Strategy; extraPayment: number; weeklyBudget: number };
 }
