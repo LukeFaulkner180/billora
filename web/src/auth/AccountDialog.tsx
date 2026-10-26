@@ -56,7 +56,7 @@ export function AccountDialog({onClose, notice, initialView='login'}: {onClose:(
         <span className="auth-eyebrow">YOUR MONEY, MADE SIMPLE</span>
         <h2 id="account-title">{view==='signup'?'Create your account':view==='recover'?'Reset your password':'Welcome to Billora'}</h2>
         <p className="auth-subtitle">{view==='signup'?'Start building a clearer financial future.':view==='recover'?'We’ll send you a secure recovery link.':'Sign in to pick up right where you left off.'}</p>
-        <div className="billora-beta-notice" role="note"><Icon name="shield"/><span>Account testing is underway. Until privacy and deletion controls are complete, use sample financial figures only.</span></div>}
+        <div className="billora-beta-notice" role="note"><Icon name="shield"/><span>Account testing is underway. Until privacy and deletion controls are complete, use sample financial figures only.</span></div>
         <p className="billora-email-intro">Start with email and password. Other sign-in options will be added once configured.</p>
         <form className="auth-form" onSubmit={e=>void submit(e)}>
           <label>Email address<input autoComplete="email" type="email" placeholder="you@example.com" required value={email} onChange={e=>setEmail(e.target.value)}/></label>
